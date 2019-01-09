@@ -151,6 +151,8 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             String projectDescription = project.getDescription();
 
             fillOverview3rdPartyComponentTable(document, projectLicenseInfoResults);
+            fillDevelopmentDetailsTable(document, projectLicenseInfoResults);
+
             fillOwnerGroup(document, project);
             fillAttendeesTable(document, project);
 
@@ -169,10 +171,14 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
 
             fillSpecialOSSRisksTable(document, project, obligationResults);
 
+            fillReleaseBulletList(document, projectLicenseInfoResults);
+            fillReleaseDetailList(document, projectLicenseInfoResults, includeObligations);
+            fillAdditionalRequirementsTable(document, obligationResults);
+            fillLicenseList(document, projectLicenseInfoResults);
+
             // because of the impossible API component subsections must be the last thing in the docx file
             // the rest of the sections must be generated after this
             writeComponentSubsections(document, projectLicenseInfoResults, obligationResults);
-
     }
 
     private void fillOwnerGroup(XWPFDocument document, Project project) throws XmlException, TException {
@@ -283,7 +289,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     }
 
     private void fillOverview3rdPartyComponentTable(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults) throws XmlException {
-        XWPFTable table = document.getTables().get(2);
+        XWPFTable table = document.getTables().get(3);
 
         int currentRow = 1;
         for(LicenseInfoParsingResult result : projectLicenseInfoResults) {
@@ -363,6 +369,108 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                     row.addNewTableCell().setText(o.getText());
                 }
             }
+        }
+
+    private void fillDevelopmentDetailsTable(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults) throws XmlException {
+        XWPFTable table = document.getTables().get(2);
+
+        int currentRow = 1;
+        for(LicenseInfoParsingResult result : projectLicenseInfoResults) {
+            if(result.getStatus() != LicenseInfoRequestStatus.SUCCESS) {
+                continue;
+            }
+
+            XWPFTableRow row = table.insertNewTableRow(currentRow++);
+
+            row.addNewTableCell().setText(result.getName());
+
+            String operatingSystems = "";
+            if(!result.isSetComponentOperatingSystems()) {
+                operatingSystems = "Unknown Operating Systems.";
+            } else {
+                for(String operatingSystem : result.getComponentOperatingSystems()) {
+                    operatingSystems += operatingSystem + " ";
+                }
+                if (result.getComponentOperatingSystems().isEmpty()) {
+                    operatingSystems = "Unknown Operating Systems.";
+                }
+            }
+            row.addNewTableCell().setText(operatingSystems);
+
+            String languages = "";
+            if(!result.isSetComponentLanguages()) {
+                languages = "Unknown languages.";
+            } else {
+                for(String language : result.getComponentLanguages()) {
+                    languages += language + " ";
+                }
+                if (result.getComponentLanguages().isEmpty()) {
+                    languages = "Unknown languages.";
+                }
+            }
+            row.addNewTableCell().setText(languages);
+
+            String platforms = "";
+            if(!result.isSetComponentSoftwarePlatforms()) {
+                platforms = "Unknown platforms.";
+            } else {
+                for(String platform : result.getComponentSoftwarePlatforms()) {
+                    platforms += platform + " ";
+                }
+                if (result.getComponentSoftwarePlatforms().isEmpty()) {
+                    platforms = "Unknown platforms.";
+                }
+            }
+            row.addNewTableCell().setText(platforms);
+        }
+    }
+
+    private void fillAdditionalRequirementsTable(XWPFDocument document, Collection<ObligationParsingResult> obligationResults) throws XmlException {
+        Map<String, Integer> licenseAppearances = new HashMap<String, Integer>();
+        for(ObligationParsingResult result : obligationResults) {
+            if(result.getStatus() != ObligationInfoRequestStatus.SUCCESS) {
+                continue;
+            }
+            for(Obligation obligation : result.getObligations()) {
+                for(String license : obligation.getLicenseIDs()) {
+                    if(!licenseAppearances.containsKey(license)) {
+                        licenseAppearances.put(license, 1);
+                    } else {
+                        int count = licenseAppearances.get(license);
+                        licenseAppearances.put(license, count+1);
+                    }
+                }
+            }
+        }
+
+        Map<ObligationKey,ArrayList<String>> collatedObligations = new HashMap<ObligationKey,ArrayList<String>>();
+        for(ObligationParsingResult result : obligationResults) {
+            if(result.getStatus() != ObligationInfoRequestStatus.SUCCESS) {
+                continue;
+            }
+            for(Obligation obligation : result.getObligations()) {
+                ObligationKey key = new ObligationKey(obligation.getTopic(), obligation.getText());
+                if(!collatedObligations.containsKey(key)) {
+                    collatedObligations.put(key, new ArrayList<String>());
+                }
+                ArrayList<String> licenses = collatedObligations.get(key);
+                for(String license : obligation.getLicenseIDs()) {
+                    if(!licenses.contains(license) && licenseAppearances.get(license) >= 3) {
+                        licenses.add(license);
+                    }
+                }
+            }
+        }
+
+        XWPFTable table = document.getTables().get(4);
+        int currentRow = 1;
+        for( ObligationKey key :  collatedObligations.keySet()) {
+            ArrayList<String> licenses = collatedObligations.get(key);
+            XWPFTableRow row = table.insertNewTableRow(currentRow++);
+            String licensesString = String.join(" ", licenses);
+            row.addNewTableCell().setText(key.topic);
+            row.addNewTableCell().setText(licensesString);
+            row.addNewTableCell().setText(key.text);
         }
     }
 
