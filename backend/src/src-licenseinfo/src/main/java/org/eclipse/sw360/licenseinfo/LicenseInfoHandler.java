@@ -28,6 +28,7 @@ import org.eclipse.sw360.datahandler.thrift.attachments.Attachment;
 import org.eclipse.sw360.datahandler.thrift.components.*;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.*;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
+import org.eclipse.sw360.datahandler.thrift.projects.FulfilledObligation;
 import org.eclipse.sw360.datahandler.thrift.users.User;
 import org.eclipse.sw360.licenseinfo.outputGenerators.*;
 import org.eclipse.sw360.licenseinfo.parsers.*;
@@ -36,10 +37,14 @@ import org.eclipse.sw360.licenseinfo.util.LicenseNameWithTextUtils;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 
+
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.eclipse.sw360.datahandler.common.CommonUtils.nullToEmptySet;
@@ -59,6 +64,7 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
     private static final String DEFAULT_LICENSE_INFO_TEXT = dropCommentedLine(DEFAULT_LICENSE_INFO_HEADER_FILE);
     private static final String DEFAULT_OBLIGATIONS_FILE = "/DefaultObligations.txt";
     private static final String DEFAULT_OBLIGATIONS_TEXT = dropCommentedLine(DEFAULT_OBLIGATIONS_FILE);
+    private static final String OBLIGATION_FOLDER = "/Obligations";
     public static final String MSG_NO_RELEASE_GIVEN = "No release given";
 
     protected List<LicenseInfoParser> parsers;
@@ -276,6 +282,11 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
         return DEFAULT_OBLIGATIONS_TEXT;
     }
 
+    @Override
+    public List<FulfilledObligation> getFulfilledObligations() {
+        return getFulfilledObligationsFromFolder();
+    }
+
     protected Map<Release, Set<String>> mapKeysToReleases(Map<String, Set<String>> releaseIdsToAttachmentIds, User user) throws TException {
         Map<Release, Set<String>> result = Maps.newHashMap();
         try {
@@ -439,8 +450,60 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
                 .findFirst().orElseThrow(() -> new TException("Unknown output generator: " + generatorClassname));
     }
 
+    private List<FulfilledObligation> getFulfilledObligationsFromFolder() {
+        try {
+            files = getResourceFiles(OBLIGATION_FOLDER);
+        } catch (IOException e) {
+            LOGGER.warn("Could not read Obligation Folder content");
+            return new ArrayList<Obligation>();
+        }
+
+        String p = "(\\d+)\..*";
+        Pattern r = Pattern.compile(p);
+
+        List<FulfilledObligation> lst = new ArrayList<FulfilledObligation>();
+        for (String f : files ) {
+            content = dropCommentedLine(OBLIGATION_FOLDER + "/" + f)
+            FulfilledObligation ob = new Obligation();
+            Matcher m = r.matcher(f);
+            ob.id = Integer.parseInt(m.group(0));
+            ob.message = content;
+            ob.fulfilled = false;
+            lst.add(ob);
+        }
+    }
+
     private static String dropCommentedLine(String TEMPLATE_FILE) {
         String text = new String( CommonUtils.loadResource(LicenseInfoHandler.class, TEMPLATE_FILE).orElse(new byte[0]) );
         return text.replaceAll("(?m)^#.*(?:\r?\n)?", ""); // ignore comments in template file
     }
+
+    private List<String> getResourceFiles(String path) throws IOException {
+        List<String> filenames = new ArrayList<>();
+
+        try (
+                InputStream in = getResourceAsStream(path);
+                BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+            String resource;
+
+            while ((resource = br.readLine()) != null) {
+                filenames.add(resource);
+            }
+        }
+
+        return filenames;
+    }
+
+    private InputStream getResourceAsStream(String resource) {
+        final InputStream in
+                = getContextClassLoader().getResourceAsStream(resource);
+
+        return in == null ? getClass().getResourceAsStream(resource) : in;
+    }
+
+    private ClassLoader getContextClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
 }
+
+

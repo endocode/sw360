@@ -20,6 +20,7 @@ typedef components.Release Release
 typedef components.Attachment Attachment
 typedef users.User User
 typedef projects.Project Project
+typedef projects.FulfilledObligation FulfilledObligation
 
 enum LicenseInfoRequestStatus{
     SUCCESS = 0,
@@ -129,5 +130,10 @@ service LicenseInfoService {
      * returns the default obligations text
      */
     string getDefaultObligationsText();
+
+    /**
+     * returns the obligations
+     */
+    list<FulfilledObligation> getFulfilledObligations();
 
 }

@@ -494,6 +494,7 @@ public class ModerationPortlet extends FossologyAwarePortlet {
             request.setAttribute(PortalConstants.ACTUAL_PROJECT, actual_project);
             request.setAttribute(PortalConstants.DEFAULT_LICENSE_INFO_HEADER_TEXT, getDefaultLicenseInfoHeaderText());
             request.setAttribute(PortalConstants.DEFAULT_OBLIGATIONS_TEXT, getDefaultObligationsText());
+            request.setAttribute(PortalConstants.FULFILLED_OBLIGATIONS, getProjectFulfilledObligations());
         } catch (TException e) {
             log.error("Could not retrieve project", e);
         }

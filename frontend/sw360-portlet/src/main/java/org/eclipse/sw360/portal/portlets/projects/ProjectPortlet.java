@@ -837,6 +837,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
         request.setAttribute(DOCUMENT_TYPE, SW360Constants.TYPE_PROJECT);
         request.setAttribute(DOCUMENT_ID, id);
         request.setAttribute(DEFAULT_LICENSE_INFO_HEADER_TEXT, getProjectDefaultLicenseInfoHeaderText());
+        request.setAttribute(FULFILLED_OBLIGATIONS, getProjectFulfilledObligations());
         request.setAttribute(DEFAULT_OBLIGATIONS_TEXT, getProjectDefaultObligationsText());
         if (id != null) {
             try {
@@ -1280,6 +1281,17 @@ public class ProjectPortlet extends FossologyAwarePortlet {
             return defaultObligationsText;
         } catch (TException e) {
             log.error("Could not load default license info header text from backend.", e);
+            return "";
+        }
+    }
+
+    private List<FulfilledObligation> getProjectFulfilledObligations() {
+        final LicenseInfoService.Iface licenseInfoClient = thriftClients.makeLicenseInfoClient();
+        try {
+            List<FulfilledObligation> listOfFulfilledObligations = licenseInfoClient.getFulfilledObligations();
+            return listOfFulfilledObligations;
+        } catch (TException e) {
+            log.error("Could not load obligations from backend.", e);
             return "";
         }
     }
