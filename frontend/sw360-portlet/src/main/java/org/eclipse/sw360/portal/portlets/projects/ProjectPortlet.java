@@ -837,6 +837,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
         request.setAttribute(DOCUMENT_TYPE, SW360Constants.TYPE_PROJECT);
         request.setAttribute(DOCUMENT_ID, id);
         request.setAttribute(DEFAULT_LICENSE_INFO_HEADER_TEXT, getProjectDefaultLicenseInfoHeaderText());
+        //request.setAttribute(FULFILLED_OBLIGATIONS, getProjectFulfilledObligations());
         request.setAttribute(DEFAULT_OBLIGATIONS_TEXT, getProjectDefaultObligationsText());
         if (id != null) {
             try {
@@ -1283,6 +1284,17 @@ public class ProjectPortlet extends FossologyAwarePortlet {
             return "";
         }
     }
+
+//    private List<FulfilledObligation> getProjectFulfilledObligations() {
+//        final LicenseInfoService.Iface licenseInfoClient = thriftClients.makeLicenseInfoClient();
+//        try {
+//            List<FulfilledObligation> listOfFulfilledObligations = licenseInfoClient.getFulfilledObligations();
+//            return listOfFulfilledObligations;
+//        } catch (TException e) {
+//            log.error("Could not load obligations from backend.", e);
+//            return new ArrayList<FulfilledObligation>();
+//        }
+//    }
 
     private void serveProjectList(ResourceRequest request, ResourceResponse response) throws IOException, PortletException {
         HttpServletRequest originalServletRequest = PortalUtil.getOriginalServletRequest(PortalUtil.getHttpServletRequest(request));

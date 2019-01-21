@@ -17,7 +17,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
+import org.apache.log4j.Logger;
+import org.apache.thrift.TException;
 import org.eclipse.sw360.datahandler.common.CommonUtils;
 import org.eclipse.sw360.datahandler.common.DatabaseSettings;
 import org.eclipse.sw360.datahandler.common.WrappedException.WrappedTException;
@@ -25,17 +26,24 @@ import org.eclipse.sw360.datahandler.db.AttachmentDatabaseHandler;
 import org.eclipse.sw360.datahandler.db.ComponentDatabaseHandler;
 import org.eclipse.sw360.datahandler.thrift.ThriftClients;
 import org.eclipse.sw360.datahandler.thrift.attachments.Attachment;
-import org.eclipse.sw360.datahandler.thrift.components.*;
+import org.eclipse.sw360.datahandler.thrift.components.Component;
+import org.eclipse.sw360.datahandler.thrift.components.ComponentService;
+import org.eclipse.sw360.datahandler.thrift.components.ComponentType;
+import org.eclipse.sw360.datahandler.thrift.components.Release;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.*;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.users.User;
-import org.eclipse.sw360.licenseinfo.outputGenerators.*;
+import org.eclipse.sw360.licenseinfo.outputGenerators.DocxGenerator;
+import org.eclipse.sw360.licenseinfo.outputGenerators.OutputGenerator;
+import org.eclipse.sw360.licenseinfo.outputGenerators.TextGenerator;
+import org.eclipse.sw360.licenseinfo.outputGenerators.XhtmlGenerator;
 import org.eclipse.sw360.licenseinfo.parsers.*;
 import org.eclipse.sw360.licenseinfo.util.LicenseNameWithTextUtils;
 
-import org.apache.log4j.Logger;
-import org.apache.thrift.TException;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -439,8 +447,38 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
                 .findFirst().orElseThrow(() -> new TException("Unknown output generator: " + generatorClassname));
     }
 
+
     private static String dropCommentedLine(String TEMPLATE_FILE) {
         String text = new String( CommonUtils.loadResource(LicenseInfoHandler.class, TEMPLATE_FILE).orElse(new byte[0]) );
         return text.replaceAll("(?m)^#.*(?:\r?\n)?", ""); // ignore comments in template file
     }
+
+    private List<String> getResourceFiles(String path) throws IOException {
+        List<String> filenames = new ArrayList<>();
+
+        try (
+                InputStream in = getResourceAsStream(path);
+                BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+            String resource;
+
+            while ((resource = br.readLine()) != null) {
+                filenames.add(resource);
+            }
+        }
+
+        return filenames;
+    }
+
+    private InputStream getResourceAsStream(String resource) {
+        final InputStream in
+                = getContextClassLoader().getResourceAsStream(resource);
+
+        return in == null ? getClass().getResourceAsStream(resource) : in;
+    }
+
+    private ClassLoader getContextClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
 }
+
+

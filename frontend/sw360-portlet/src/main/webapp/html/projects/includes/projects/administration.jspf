@@ -96,6 +96,20 @@
     </tr>
 </table>
 
+<table class="table info_table" id="obligations">
+    <thead>
+        <tr><th>Obligation</th><th>Fulfilled</th></tr>
+    </thead>
+    <tbody>
+        <core_rt:forEach items="${fulfilledObligations}" var="entry">
+            <tr>
+                <td>${entry.message}</td>
+                <td><input type="checkbox" name="${entry.id}"></td>
+            </tr>
+        </core_rt:forEach>
+    </tbody>
+</table>
+
 <table class="table info_table" id="lifecycle">
     <thead>
     <tr>

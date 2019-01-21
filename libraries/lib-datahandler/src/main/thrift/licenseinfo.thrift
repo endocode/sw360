@@ -129,5 +129,4 @@ service LicenseInfoService {
      * returns the default obligations text
      */
     string getDefaultObligationsText();
-
 }

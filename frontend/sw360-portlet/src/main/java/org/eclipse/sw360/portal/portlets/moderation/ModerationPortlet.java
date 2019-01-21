@@ -31,6 +31,7 @@ import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
 import org.eclipse.sw360.datahandler.thrift.licenses.Obligation;
 import org.eclipse.sw360.datahandler.thrift.moderation.ModerationRequest;
 import org.eclipse.sw360.datahandler.thrift.moderation.ModerationService;
+import org.eclipse.sw360.datahandler.thrift.projects.CommonObligation;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectLink;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
@@ -494,6 +495,7 @@ public class ModerationPortlet extends FossologyAwarePortlet {
             request.setAttribute(PortalConstants.ACTUAL_PROJECT, actual_project);
             request.setAttribute(PortalConstants.DEFAULT_LICENSE_INFO_HEADER_TEXT, getDefaultLicenseInfoHeaderText());
             request.setAttribute(PortalConstants.DEFAULT_OBLIGATIONS_TEXT, getDefaultObligationsText());
+            //request.setAttribute(PortalConstants.FULFILLED_OBLIGATIONS, getProjectFulfilledObligations());
         } catch (TException e) {
             log.error("Could not retrieve project", e);
         }
@@ -613,4 +615,15 @@ public class ModerationPortlet extends FossologyAwarePortlet {
             return "";
         }
     }
+
+//    private List<CommonObligation> getProjectFulfilledObligations() {
+//        final ProjectService.Iface projectClient = thriftClients.makeProjectClient();
+//        try {
+//            List<CommonObligation> listOfFulfilledObligations = projectClient.getFulfilledCommonObligations();
+//            return listOfFulfilledObligations;
+//        } catch (TException e) {
+//            log.error("Could not load obligations from backend.", e);
+//            return Collections.emptyList();
+//        }
+//    }
 }
