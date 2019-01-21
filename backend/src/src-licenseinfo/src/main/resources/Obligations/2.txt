@@ -1,0 +1,1 @@
+Do not change or delete Copyright, patent, trademark, attribution notices or any further legal notices or license texts in any files – i.e. neither within any source file of the component package nor in any of its documentation files.

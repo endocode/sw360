@@ -1,0 +1,6 @@
+Document all changes and modifications in source code files with copyright notices formatted pursuant to Siemens Norm SN 11108,
+http://intra7.nes.siemens.de/qm/Normen/html_00/siemensnormen.asp
+http://intra7.nes.siemens.de/qm/Normen/documents/SN_11108.pdf
+
+Example:
+Copyright © Siemens AG, 2012 All rights reserved Modified print – fix buffer overflow (optional Author: Hugo Mustermann)
