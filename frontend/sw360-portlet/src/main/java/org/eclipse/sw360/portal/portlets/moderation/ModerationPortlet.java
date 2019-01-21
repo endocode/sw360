@@ -34,6 +34,7 @@ import org.eclipse.sw360.datahandler.thrift.moderation.ModerationService;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectLink;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
+import org.eclipse.sw360.datahandler.thrift.projects.FulfilledObligation;
 import org.eclipse.sw360.datahandler.thrift.users.User;
 import org.eclipse.sw360.datahandler.thrift.users.UserGroup;
 import org.eclipse.sw360.datahandler.thrift.users.UserService;
@@ -612,6 +613,17 @@ public class ModerationPortlet extends FossologyAwarePortlet {
         } catch (TException e) {
             log.error("Could not load default clearing summary text from backend.", e);
             return "";
+        }
+    }
+
+    private List<FulfilledObligation> getProjectFulfilledObligations() {
+        final LicenseInfoService.Iface licenseInfoClient = thriftClients.makeLicenseInfoClient();
+        try {
+            List<FulfilledObligation> listOfFulfilledObligations = licenseInfoClient.getFulfilledObligations();
+            return listOfFulfilledObligations;
+        } catch (TException e) {
+            log.error("Could not load obligations from backend.", e);
+            return new ArrayList<FulfilledObligation>();
         }
     }
 }

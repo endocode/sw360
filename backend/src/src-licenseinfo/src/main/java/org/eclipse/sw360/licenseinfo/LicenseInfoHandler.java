@@ -37,8 +37,10 @@ import org.eclipse.sw360.licenseinfo.util.LicenseNameWithTextUtils;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 
-
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -451,26 +453,29 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
     }
 
     private List<FulfilledObligation> getFulfilledObligationsFromFolder() {
+        
+        List<String> files;
         try {
             files = getResourceFiles(OBLIGATION_FOLDER);
         } catch (IOException e) {
-            LOGGER.warn("Could not read Obligation Folder content");
-            return new ArrayList<Obligation>();
+            LOGGER.warn("Could not read Obligation Folder content", e);
+            return new ArrayList<FulfilledObligation>();
         }
 
-        String p = "(\\d+)\..*";
+        String p = "(\\d+).*";
         Pattern r = Pattern.compile(p);
 
         List<FulfilledObligation> lst = new ArrayList<FulfilledObligation>();
         for (String f : files ) {
-            content = dropCommentedLine(OBLIGATION_FOLDER + "/" + f)
-            FulfilledObligation ob = new Obligation();
+            String content = dropCommentedLine(OBLIGATION_FOLDER + "/" + f);
+            FulfilledObligation ob = new FulfilledObligation();
             Matcher m = r.matcher(f);
             ob.id = Integer.parseInt(m.group(0));
             ob.message = content;
             ob.fulfilled = false;
             lst.add(ob);
         }
+        return lst;
     }
 
     private static String dropCommentedLine(String TEMPLATE_FILE) {

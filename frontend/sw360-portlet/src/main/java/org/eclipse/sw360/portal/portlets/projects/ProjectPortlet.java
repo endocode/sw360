@@ -1292,7 +1292,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
             return listOfFulfilledObligations;
         } catch (TException e) {
             log.error("Could not load obligations from backend.", e);
-            return "";
+            return new ArrayList<FulfilledObligation>();
         }
     }
 
