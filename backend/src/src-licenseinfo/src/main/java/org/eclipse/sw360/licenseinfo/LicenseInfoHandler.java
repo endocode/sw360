@@ -462,7 +462,7 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
             return new ArrayList<FulfilledObligation>();
         }
 
-        String p = "(\\d+).*";
+        String p = "^(\\d+)[.].*";
         Pattern r = Pattern.compile(p);
 
         List<FulfilledObligation> lst = new ArrayList<FulfilledObligation>();
@@ -470,7 +470,11 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
             String content = dropCommentedLine(OBLIGATION_FOLDER + "/" + f);
             FulfilledObligation ob = new FulfilledObligation();
             Matcher m = r.matcher(f);
-            ob.id = Integer.parseInt(m.group(0));
+            if (!m.find()) {
+                LOGGER.warn("Couldn't find int in filename: " + f);
+                continue;
+            }
+            ob.id = Integer.parseInt(m.group(1));
             ob.message = content;
             ob.fulfilled = false;
             lst.add(ob);
