@@ -20,10 +20,7 @@ import org.eclipse.sw360.datahandler.thrift.AddDocumentRequestSummary;
 import org.eclipse.sw360.datahandler.thrift.RequestStatus;
 import org.eclipse.sw360.datahandler.thrift.attachments.Attachment;
 import org.eclipse.sw360.datahandler.thrift.components.ReleaseClearingStatusData;
-import org.eclipse.sw360.datahandler.thrift.projects.Project;
-import org.eclipse.sw360.datahandler.thrift.projects.ProjectLink;
-import org.eclipse.sw360.datahandler.thrift.projects.ProjectRelationship;
-import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
+import org.eclipse.sw360.datahandler.thrift.projects.*;
 import org.eclipse.sw360.datahandler.thrift.ThriftClients;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.LicenseInfoService;
 import org.eclipse.sw360.datahandler.thrift.users.User;
@@ -166,6 +163,16 @@ public class ProjectHandler implements ProjectService.Iface {
         assertUser(user);
 
         return handler.searchByExternalIds(externalIds, user);
+    }
+
+    @Override
+    public List<CommonObligation> getCommonObligations(User user) throws TException {
+        return handler.getCommonObligations(user);
+    }
+
+    @Override
+    public List<CommonObligation> getFulfilledCommonObligations(Project project, User user) throws TException {
+        return null;
     }
 
     ////////////////////////////

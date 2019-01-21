@@ -65,6 +65,7 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
     private static final String DUMMY_NEW_PROJECT_ID = "newproject";
 
     private final ProjectRepository repository;
+    private final CommonObligationRepository obligationRepository;
     private final ProjectVulnerabilityRatingRepository pvrRepository;
     private final ProjectModerator moderator;
     private final AttachmentConnector attachmentConnector;
@@ -104,6 +105,7 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
         // Create the repositories
         repository = new ProjectRepository(db);
         pvrRepository = new ProjectVulnerabilityRatingRepository(db);
+        obligationRepository = new CommonObligationRepository(db);
 
         // Create the moderator
         this.moderator = moderator;
@@ -147,6 +149,20 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
         }
 
         return project;
+    }
+
+    public CommonObligation getCommonObligation(String id, User user) throws SW360Exception {
+        CommonObligation obligation = obligationRepository.get(id);
+
+        if (obligation == null) {
+            throw fail("Could not fetch OSS obligation from database! id=" + id);
+        }
+
+        if (!makePermission(obligation, user).isActionAllowed(RequestedAction.READ)) {
+            throw fail("User %s is not allowed to view the requested obligation %s !", user, obligation);
+        }
+
+        return obligation;
     }
 
     ////////////////////////////
@@ -682,6 +698,12 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
         return releaseIds;
     }
 
+    public List<CommonObligation> getCommonObligations(User user) {
+        return obligationRepository.getAll().stream()
+                .filter(o -> makePermission(o, user).isActionAllowed(RequestedAction.READ))
+                .collect(Collectors.toList());
+    }
+
     private void sendMailNotificationsForNewProject(Project project, String user) {
         mailUtil.sendMail(project.getProjectResponsible(),
                 MailConstants.SUBJECT_FOR_NEW_PROJECT,
@@ -757,4 +779,5 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
                 SW360Constants.NOTIFICATION_CLASS_PROJECT, Project._Fields.ROLES.toString(),
                 project.getName(), project.getVersion());
     }
+
 }
