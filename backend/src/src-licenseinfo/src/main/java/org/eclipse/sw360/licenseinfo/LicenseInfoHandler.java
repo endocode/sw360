@@ -453,7 +453,6 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
     }
 
     private List<FulfilledObligation> getFulfilledObligationsFromFolder() {
-        
         List<String> files;
         try {
             files = getResourceFiles(OBLIGATION_FOLDER);
