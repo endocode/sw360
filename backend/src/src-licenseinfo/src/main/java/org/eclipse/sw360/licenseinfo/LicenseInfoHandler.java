@@ -41,7 +41,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.eclipse.sw360.datahandler.common.CommonUtils.nullToEmptySet;
 import static org.eclipse.sw360.datahandler.common.SW360Assert.assertNotNull;
@@ -60,7 +59,7 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
     private static final String DEFAULT_LICENSE_INFO_TEXT = dropCommentedLine(DEFAULT_LICENSE_INFO_HEADER_FILE);
     private static final String DEFAULT_OBLIGATIONS_FILE = "/DefaultObligations.txt";
     private static final String DEFAULT_OBLIGATIONS_TEXT = dropCommentedLine(DEFAULT_OBLIGATIONS_FILE);
-    public static final String MSG_NO_RELEASE_GIVEN = "No release given";
+    private static final String MSG_NO_RELEASE_GIVEN = "No release given";
 
     protected List<LicenseInfoParser> parsers;
     protected List<OutputGenerator<?>> outputGenerators;
@@ -385,35 +384,17 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
         return parsingResults;
     }
 
-    protected List<LicenseInfoParsingResult> assignComponentToLicenseInfoParsingResults(List<LicenseInfoParsingResult> parsingResults, Release release, User user) throws TException {
+    private List<LicenseInfoParsingResult> assignComponentToLicenseInfoParsingResults(List<LicenseInfoParsingResult> parsingResults, Release release, User user) throws TException {
         final ComponentService.Iface componentClient = new ThriftClients().makeComponentClient();
         final Component component = componentClient.getComponentById(release.getComponentId(), user);
 
         parsingResults.forEach(result -> {
-            if( component != null) {
+            if(component != null) {
                 if (component.getComponentType() != null) {
                     result.setComponentType(toString(component.getComponentType()));
                 } else {
                     LOGGER.warn("Component with [" + component.getId() + ": " + component.getName() + "] has no type!");
                     result.setComponentType("");
-                }
-
-                if(component.isSetLanguages()) {
-                    result.setComponentLanguages(component.getLanguages());
-                } else {
-                    result.setComponentLanguages(Collections.singleton("Unknown languages."));
-                }
-
-                if(component.isSetSoftwarePlatforms()) {
-                    result.setComponentSoftwarePlatforms(component.getSoftwarePlatforms());
-                } else {
-                    result.setComponentSoftwarePlatforms(Collections.singleton("Unknown platforms."));
-                }
-
-                if(component.isSetOperatingSystems()) {
-                    result.setComponentOperatingSystems(component.getOperatingSystems());
-                } else {
-                    result.setComponentOperatingSystems(Collections.singleton("Unknown Operating system."));
                 }
             } else {
                 // just being extra defensive

@@ -25,11 +25,16 @@ import org.eclipse.sw360.datahandler.common.CommonUtils;
 import org.eclipse.sw360.datahandler.thrift.components.Release;
 import org.eclipse.sw360.datahandler.thrift.SW360Exception;
 import org.eclipse.sw360.datahandler.thrift.ThriftClients;
+import org.eclipse.sw360.datahandler.thrift.components.Component;
+import org.eclipse.sw360.datahandler.thrift.components.ComponentService;
+import org.eclipse.sw360.datahandler.thrift.components.Release;
+import org.eclipse.sw360.datahandler.thrift.components.ReleaseLink;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.*;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
 import org.eclipse.sw360.datahandler.thrift.licenses.Todo;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
+import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
 import org.eclipse.sw360.datahandler.thrift.users.UserService;
 import org.eclipse.sw360.datahandler.thrift.users.User;
 
@@ -38,8 +43,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.eclipse.sw360.datahandler.common.CommonUtils.nullToEmptyString;
+import static org.eclipse.sw360.datahandler.common.CommonUtils.wrapThriftOptionalReplacement;
 import static org.eclipse.sw360.licenseinfo.outputGenerators.DocxUtils.*;
 
 public class DocxGenerator extends OutputGenerator<byte[]> {
@@ -151,7 +158,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             String projectDescription = project.getDescription();
 
             fillOverview3rdPartyComponentTable(document, projectLicenseInfoResults);
-            fillDevelopmentDetailsTable(document, projectLicenseInfoResults);
+            fillDevelopmentDetailsTable(document, project);
 
             fillOwnerGroup(document, project);
             fillAttendeesTable(document, project);
@@ -323,7 +330,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
 
     private void writeComponentSubsections(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults, Collection<ObligationParsingResult> obligationResults) throws XmlException {
 
-        for(LicenseInfoParsingResult result : projectLicenseInfoResults) {
+        for (LicenseInfoParsingResult result : projectLicenseInfoResults) {
 
             XWPFParagraph title = document.createParagraph();
             title.setStyle(STYLE_HEADING_3);
@@ -336,8 +343,8 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
 
             LicenseInfo licenseInfo = result.getLicenseInfo();
             String globalLicense = UNKNOWN_LICENSE;
-            for(LicenseNameWithText l : licenseInfo.getLicenseNamesWithTexts()) {
-                if("global".equals(l.getType())) {
+            for (LicenseNameWithText l : licenseInfo.getLicenseNamesWithTexts()) {
+                if ("global".equals(l.getType())) {
                     globalLicense = l.getLicenseName();
                     break;
                 }
@@ -345,23 +352,23 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
 
             descriptionRun.setText("The component is licensed under " + globalLicense + ".");
 
-            if(result.isSetRelease()) {
+            if (result.isSetRelease()) {
                 Optional<ObligationParsingResult> obligationsResultOp = obligationsForRelease(result.getRelease(), obligationResults);
 
-                if(!obligationsResultOp.isPresent()) {
+                if (!obligationsResultOp.isPresent()) {
                     continue;
                 }
 
                 ObligationParsingResult obligationsResult = obligationsResultOp.get();
 
-                if(!obligationsResult.isSetObligations()) {
+                if (!obligationsResult.isSetObligations()) {
                     continue;
                 }
 
                 int currentRow = 0;
                 Collection<Obligation> obligations = obligationsResult.getObligations();
                 XWPFTable table = document.createTable();
-                for(Obligation o :  obligations) {
+                for (Obligation o : obligations) {
                     XWPFTableRow row = table.insertNewTableRow(currentRow++);
                     String licensesString = String.join(" ", o.getLicenseIDs());
                     row.addNewTableCell().setText(o.getTopic());
@@ -370,57 +377,36 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                 }
             }
         }
+    }
 
-    private void fillDevelopmentDetailsTable(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults) throws XmlException {
+    private void fillDevelopmentDetailsTable(XWPFDocument document, Project project) throws TException {
         XWPFTable table = document.getTables().get(2);
 
         int currentRow = 1;
-        for(LicenseInfoParsingResult result : projectLicenseInfoResults) {
-            if(result.getStatus() != LicenseInfoRequestStatus.SUCCESS) {
-                continue;
-            }
+
+        ProjectService.Iface projClient = new ThriftClients().makeProjectClient();
+        ComponentService.Iface compClient = new ThriftClients().makeComponentClient();
+
+        Set<ReleaseLink> releaseLinks = projClient.getLinkedProjectsOfProject(project, false, null).stream()
+                .flatMap(projectLink -> projectLink.getLinkedReleases().stream())
+                .collect(Collectors.toSet());
+
+
+        for (ReleaseLink rl : releaseLinks) {
+            Release release = compClient.getReleaseById(rl.getId(), null);
+            Component component = compClient.getComponentById(release.getComponentId(), null);
 
             XWPFTableRow row = table.insertNewTableRow(currentRow++);
 
-            row.addNewTableCell().setText(result.getName());
+            row.addNewTableCell().setText(component.getName());
 
-            String operatingSystems = "";
-            if(!result.isSetComponentOperatingSystems()) {
-                operatingSystems = "Unknown Operating Systems.";
-            } else {
-                for(String operatingSystem : result.getComponentOperatingSystems()) {
-                    operatingSystems += operatingSystem + " ";
-                }
-                if (result.getComponentOperatingSystems().isEmpty()) {
-                    operatingSystems = "Unknown Operating Systems.";
-                }
-            }
+            String operatingSystems = component.getOperatingSystems().isEmpty() ? "Unknown operating systems" : String.join(" ", component.getOperatingSystems());
             row.addNewTableCell().setText(operatingSystems);
 
-            String languages = "";
-            if(!result.isSetComponentLanguages()) {
-                languages = "Unknown languages.";
-            } else {
-                for(String language : result.getComponentLanguages()) {
-                    languages += language + " ";
-                }
-                if (result.getComponentLanguages().isEmpty()) {
-                    languages = "Unknown languages.";
-                }
-            }
-            row.addNewTableCell().setText(languages);
+            String langs = component.getLanguages().isEmpty() ? "Unknown languages" : String.join(" ", component.getLanguages());
+            row.addNewTableCell().setText(langs);
 
-            String platforms = "";
-            if(!result.isSetComponentSoftwarePlatforms()) {
-                platforms = "Unknown platforms.";
-            } else {
-                for(String platform : result.getComponentSoftwarePlatforms()) {
-                    platforms += platform + " ";
-                }
-                if (result.getComponentSoftwarePlatforms().isEmpty()) {
-                    platforms = "Unknown platforms.";
-                }
-            }
+            String platforms = component.getSoftwarePlatforms().isEmpty() ? "Unknown platforms" : String.join(" ", component.getSoftwarePlatforms());
             row.addNewTableCell().setText(platforms);
         }
     }
