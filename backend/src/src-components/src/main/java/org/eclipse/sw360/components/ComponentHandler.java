@@ -336,6 +336,11 @@ public class ComponentHandler implements ComponentService.Iface {
     }
 
     @Override
+    public Component getComponentForRelease(String releaseId) throws TException {
+        return handler.getComponentByReleaseId(releaseId);
+    }
+
+    @Override
     public boolean releaseIsUsed(String releaseId) throws TException {
         return handler.checkIfInUse(releaseId);
     }

@@ -1166,6 +1166,17 @@ public class ComponentDatabaseHandler extends AttachmentAwareDatabaseHandler {
         return componentRepository.getUsingComponents(releaseIds);
     }
 
+    public Component getComponentByReleaseId(String releaseId) throws SW360Exception {
+
+        Set<Component> components = componentRepository.getComponents(releaseId);
+
+        if (components.isEmpty()) {
+            throw fail(String.format("Could not fetch component from database! release id=%s", releaseId));
+        }
+
+        return components.stream().findAny().orElseThrow(() -> new SW360Exception(String.format("Could not fetch component from database! release id=%s", releaseId)));
+    }
+
     public Component getComponentForReportFromFossologyUploadId(String uploadId) {
 
         Component component = componentRepository.getComponentFromFossologyUploadId(uploadId);

@@ -527,6 +527,11 @@ service ComponentService {
     set <Component> getUsingComponentsForComponent(1: set <string> releaseId );
 
     /**
+     * get component belonging to release specified by releaseId
+     **/
+    Component getComponentForRelease(1: string releaseId );
+
+    /**
      * check if release is used by other releases, components or projects
      **/
     bool releaseIsUsed(1: string releaseId);

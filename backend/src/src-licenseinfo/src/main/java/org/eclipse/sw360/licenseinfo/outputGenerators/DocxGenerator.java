@@ -375,24 +375,30 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
         }
     }
 
-    private void fillDevelopmentDetailsTable(XWPFDocument document, Project project) {
+    private void fillDevelopmentDetailsTable(XWPFDocument document, Project project) throws TException {
+        LOGGER.info("fill dev table called");
         XWPFTable table = document.getTables().get(2);
 
         int currentRow = 1;
 
         for (Component component : SW360Utils.getComponentsByProject(project, new ThriftClients(), LOGGER)) {
+            LOGGER.info(String.format("Component %s", component.getName()));
             XWPFTableRow row = table.insertNewTableRow(currentRow++);
 
             row.addNewTableCell().setText(component.getName());
 
             String operatingSystems = component.getOperatingSystems().isEmpty() ? "Unknown operating systems" : String.join(" ", component.getOperatingSystems());
             row.addNewTableCell().setText(operatingSystems);
+            LOGGER.info(String.format("oses: %s", operatingSystems));
 
             String langs = component.getLanguages().isEmpty() ? "Unknown languages" : String.join(" ", component.getLanguages());
             row.addNewTableCell().setText(langs);
+            LOGGER.info(String.format("langs: %s", langs));
 
             String platforms = component.getSoftwarePlatforms().isEmpty() ? "Unknown platforms" : String.join(" ", component.getSoftwarePlatforms());
             row.addNewTableCell().setText(platforms);
+            LOGGER.info(String.format("plats: %s", platforms));
+
         }
     }
 

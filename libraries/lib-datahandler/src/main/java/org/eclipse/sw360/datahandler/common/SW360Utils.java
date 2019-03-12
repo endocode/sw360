@@ -317,7 +317,11 @@ public class SW360Utils {
 
             Set<Component> comps = Collections.emptySet();
             for (ReleaseLink rl : rls) {
-                comps.addAll(componentClient.getUsingComponentsForRelease(rl.getId()));
+                log.info(String.format("ReleaseLink id %s", rl.getId()));
+
+                Component c = componentClient.getComponentForRelease(rl.getId());
+                log.info(String.format("Found component %s", c.getName()));
+                comps.add(c);
             }
             return comps;
 

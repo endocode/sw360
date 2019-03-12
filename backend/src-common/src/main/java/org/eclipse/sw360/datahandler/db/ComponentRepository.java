@@ -76,6 +76,12 @@ import java.util.*;
                     "    }" +
                     "  }" +
                     "}"),
+        @View(name = "byReleaseId",
+                map = "function(doc) {" +
+                    "  if (doc.type == 'release') {" +
+                    "    emit(doc._id, doc.componentId);" +
+                    "  }" +
+                    "}"),
         @View(name = "byFossologyId",
                 map = "function(doc) {  " +
                     "  if (doc.type == 'release') { " +
@@ -151,6 +157,11 @@ public class ComponentRepository extends SummaryAwareRepository<Component> {
     public Set<Component> getUsingComponents(String releaseId) {
         final Set<String> componentIdsByLinkingRelease = queryForIdsAsValue("byLinkingRelease", releaseId);
         return new HashSet<>(get(componentIdsByLinkingRelease));
+    }
+
+    public Set<Component> getComponents(String releaseId) {
+        final Set<String> componentsIdByRelease = queryForIdsAsValue("byReleaseId", releaseId);
+        return new HashSet<>(get(componentsIdByRelease));
     }
 
     public Component getComponentFromFossologyUploadId(String fossologyUploadId) {
