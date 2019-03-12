@@ -309,6 +309,26 @@ public class SW360Utils {
         return Collections.emptyList();
     }
 
+    public static Set<Component> getComponentsByProject(Project project, ThriftClients thriftClients, Logger log) {
+        List<ReleaseLink> rls = getLinkedReleases(project, thriftClients, log);
+
+        try {
+            ComponentService.Iface componentClient = thriftClients.makeComponentClient();
+
+            Set<Component> comps = Collections.emptySet();
+            for (ReleaseLink rl : rls) {
+                comps.addAll(componentClient.getUsingComponentsForRelease(rl.getId()));
+            }
+            return comps;
+
+        } catch (TException e) {
+            log.error("Could not get components", e);
+        }
+
+        return Collections.emptySet();
+
+    }
+
     public static Predicate<String> startsWith(final String prefix) {
         return new Predicate<String>() {
             @Override

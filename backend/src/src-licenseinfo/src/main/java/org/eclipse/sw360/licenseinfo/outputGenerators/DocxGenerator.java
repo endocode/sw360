@@ -12,17 +12,12 @@
  */
 package org.eclipse.sw360.licenseinfo.outputGenerators;
 
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.thrift.TException;
 import org.apache.log4j.Logger;
+import org.apache.poi.xwpf.usermodel.*;
+import org.apache.thrift.TException;
 import org.apache.xmlbeans.XmlException;
 import org.eclipse.sw360.datahandler.common.CommonUtils;
-import org.eclipse.sw360.datahandler.thrift.components.Release;
+import org.eclipse.sw360.datahandler.common.SW360Utils;
 import org.eclipse.sw360.datahandler.thrift.SW360Exception;
 import org.eclipse.sw360.datahandler.thrift.ThriftClients;
 import org.eclipse.sw360.datahandler.thrift.components.Component;
@@ -35,21 +30,22 @@ import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
 import org.eclipse.sw360.datahandler.thrift.licenses.Todo;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
-import org.eclipse.sw360.datahandler.thrift.users.UserService;
 import org.eclipse.sw360.datahandler.thrift.users.User;
+import org.eclipse.sw360.datahandler.thrift.users.UserService;
+import org.eclipse.sw360.licenseinfo.LicenseInfoHandler;
 
-import java.math.BigInteger;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.eclipse.sw360.datahandler.common.CommonUtils.nullToEmptyString;
-import static org.eclipse.sw360.datahandler.common.CommonUtils.wrapThriftOptionalReplacement;
 import static org.eclipse.sw360.licenseinfo.outputGenerators.DocxUtils.*;
 
 public class DocxGenerator extends OutputGenerator<byte[]> {
+    private static final Logger LOGGER = Logger.getLogger(DocxGenerator.class);
     private static final String UNKNOWN_LICENSE_NAME = "Unknown license name";
     private static final String UNKNOWN_FILE_NAME = "Unknown file name";
     private static final String TODO_DEFAULT_TEXT = "todo not determined so far.";
@@ -379,23 +375,12 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
         }
     }
 
-    private void fillDevelopmentDetailsTable(XWPFDocument document, Project project) throws TException {
+    private void fillDevelopmentDetailsTable(XWPFDocument document, Project project) {
         XWPFTable table = document.getTables().get(2);
 
         int currentRow = 1;
 
-        ProjectService.Iface projClient = new ThriftClients().makeProjectClient();
-        ComponentService.Iface compClient = new ThriftClients().makeComponentClient();
-
-        Set<ReleaseLink> releaseLinks = projClient.getLinkedProjectsOfProject(project, false, null).stream()
-                .flatMap(projectLink -> projectLink.getLinkedReleases().stream())
-                .collect(Collectors.toSet());
-
-
-        for (ReleaseLink rl : releaseLinks) {
-            Release release = compClient.getReleaseById(rl.getId(), null);
-            Component component = compClient.getComponentById(release.getComponentId(), null);
-
+        for (Component component : SW360Utils.getComponentsByProject(project, new ThriftClients(), LOGGER)) {
             XWPFTableRow row = table.insertNewTableRow(currentRow++);
 
             row.addNewTableCell().setText(component.getName());
