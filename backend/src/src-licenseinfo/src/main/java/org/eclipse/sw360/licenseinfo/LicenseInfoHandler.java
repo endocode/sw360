@@ -66,7 +66,7 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
     private static final String DEFAULT_LICENSE_INFO_TEXT = dropCommentedLine(DEFAULT_LICENSE_INFO_HEADER_FILE);
     private static final String DEFAULT_OBLIGATIONS_FILE = "/DefaultObligations.txt";
     private static final String DEFAULT_OBLIGATIONS_TEXT = dropCommentedLine(DEFAULT_OBLIGATIONS_FILE);
-    private static final String OBLIGATION_FOLDER = "/Obligations";
+    private static final String OBLIGATION_DIRECTORY = "/Obligations";
     public static final String MSG_NO_RELEASE_GIVEN = "No release given";
 
     protected List<LicenseInfoParser> parsers;
@@ -455,7 +455,7 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
     private List<FulfilledObligation> getFulfilledObligationsFromFolder() {
         List<String> files;
         try {
-            files = getResourceFiles(OBLIGATION_FOLDER);
+            files = getResourceFiles(OBLIGATION_DIRECTORY);
         } catch (IOException e) {
             LOGGER.warn("Could not read Obligation Folder content", e);
             return new ArrayList<FulfilledObligation>();
@@ -466,7 +466,7 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
 
         List<FulfilledObligation> lst = new ArrayList<FulfilledObligation>();
         for (String f : files ) {
-            String content = dropCommentedLine(OBLIGATION_FOLDER + "/" + f);
+            String content = dropCommentedLine(OBLIGATION_DIRECTORY + "/" + f);
             FulfilledObligation ob = new FulfilledObligation();
             Matcher m = r.matcher(f);
             if (!m.find()) {
