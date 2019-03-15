@@ -458,13 +458,13 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
             files = getResourceFiles(OBLIGATION_DIRECTORY);
         } catch (IOException e) {
             LOGGER.warn("Could not read Obligation Folder content", e);
-            return new ArrayList<FulfilledObligation>();
+            return Collections.emptyList();
         }
 
         String p = "^(\\d+)[.].*";
         Pattern r = Pattern.compile(p);
 
-        List<FulfilledObligation> lst = new ArrayList<FulfilledObligation>();
+        List<FulfilledObligation> lst = new ArrayList<>();
         for (String f : files ) {
             String content = dropCommentedLine(OBLIGATION_DIRECTORY + "/" + f);
             FulfilledObligation ob = new FulfilledObligation();
