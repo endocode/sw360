@@ -62,10 +62,10 @@ enum ProjectClearingState {
     CLOSED = 2,
 }
 
-struct FulfilledObligation {
-    1: i64 id,
+struct OSSObligation {
+    1: string id,
     2: string message,
-    3: bool fulfilled,
+    3: string name,
 }
 
 struct Project {
@@ -126,7 +126,7 @@ struct Project {
     138: optional string specialRisks3rdParty,
     139: optional string deliveryChannels,
     140: optional string remarksAdditionalRequirements,
-    141: optional list<FulfilledObligation> obligations,
+    141: optional list<string> fulfilledOssObligationIds,
 
     // Urls for the project
     50: optional string homepage,
