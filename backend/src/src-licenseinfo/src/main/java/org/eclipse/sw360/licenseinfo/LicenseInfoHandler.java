@@ -286,7 +286,32 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
 
     @Override
     public List<FulfilledObligation> getFulfilledObligations() {
-        return getFulfilledObligationsFromFolder();
+        List<String> files;
+        try {
+            files = getResourceFiles(OBLIGATION_DIRECTORY);
+        } catch (IOException e) {
+            LOGGER.warn("Could not load obligations", e);
+            return Collections.emptyList();
+        }
+
+        String p = "^(\\d+)[.].*";
+        Pattern r = Pattern.compile(p);
+
+        List<FulfilledObligation> lst = new ArrayList<>();
+        for (String f : files ) {
+            String content = dropCommentedLine(OBLIGATION_DIRECTORY + "/" + f);
+            FulfilledObligation ob = new FulfilledObligation();
+            Matcher m = r.matcher(f);
+            if (!m.find()) {
+                LOGGER.warn("Couldn't find int in filename: " + f);
+                continue;
+            }
+            ob.id = Integer.parseInt(m.group(1));
+            ob.message = content;
+            ob.fulfilled = false;
+            lst.add(ob);
+        }
+        return lst;
     }
 
     protected Map<Release, Set<String>> mapKeysToReleases(Map<String, Set<String>> releaseIdsToAttachmentIds, User user) throws TException {
@@ -452,34 +477,6 @@ public class LicenseInfoHandler implements LicenseInfoService.Iface {
                 .findFirst().orElseThrow(() -> new TException("Unknown output generator: " + generatorClassname));
     }
 
-    private List<FulfilledObligation> getFulfilledObligationsFromFolder() {
-        List<String> files;
-        try {
-            files = getResourceFiles(OBLIGATION_DIRECTORY);
-        } catch (IOException e) {
-            LOGGER.warn("Could not read Obligation Folder content", e);
-            return Collections.emptyList();
-        }
-
-        String p = "^(\\d+)[.].*";
-        Pattern r = Pattern.compile(p);
-
-        List<FulfilledObligation> lst = new ArrayList<>();
-        for (String f : files ) {
-            String content = dropCommentedLine(OBLIGATION_DIRECTORY + "/" + f);
-            FulfilledObligation ob = new FulfilledObligation();
-            Matcher m = r.matcher(f);
-            if (!m.find()) {
-                LOGGER.warn("Couldn't find int in filename: " + f);
-                continue;
-            }
-            ob.id = Integer.parseInt(m.group(1));
-            ob.message = content;
-            ob.fulfilled = false;
-            lst.add(ob);
-        }
-        return lst;
-    }
 
     private static String dropCommentedLine(String TEMPLATE_FILE) {
         String text = new String( CommonUtils.loadResource(LicenseInfoHandler.class, TEMPLATE_FILE).orElse(new byte[0]) );
