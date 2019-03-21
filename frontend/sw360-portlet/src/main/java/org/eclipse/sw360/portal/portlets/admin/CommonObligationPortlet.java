@@ -32,6 +32,6 @@ public class CommonObligationPortlet extends Sw360Portlet {
             return;
         }
 
-      
+
     }
 }

@@ -657,8 +657,8 @@
     </portlet>
 
     <portlet>
-        <portlet-name>commonobligations</portlet-name>
-        <display-name>common obligations</display-name>
+        <portlet-name>commonObligations</portlet-name>
+        <display-name>Common Obligations</display-name>
         <portlet-class>
             org.eclipse.sw360.portal.portlets.admin.CommonObligationPortlet
         </portlet-class>
@@ -672,8 +672,8 @@
             <portlet-mode>view</portlet-mode>
         </supports>
         <portlet-info>
-            <title>CommonObligations</title>
-            <short-title>CommonObligations</short-title>
+            <title>Common Obligations</title>
+            <short-title>Common Obligations</short-title>
             <keywords/>
         </portlet-info>
         <security-role-ref>
