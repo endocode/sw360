@@ -18,20 +18,18 @@
 <portlet:defineObjects/>
 <liferay-theme:defineObjects/>
 
-<portlet:actionURL var="updateOssObligationsURL" name="updateOssObligation">
+<portlet:actionURL var="updateCommonObligationsURL" name="updateCommonObligation">
 </portlet:actionURL>
 
 <div id="header"></div>
 <p class="pageHeader"><span class="pageHeaderBigSpan">OSS Obligation Administration</span></p>
 
-<form name="ossObligationCombo">
-
-</form>
-
 <table class="info_table">
     <thead>
     <tr>
-        <th>OSS Obligation</th>
+        <th>Name</th>
+        <th>Text</th>
+        <th></th>
     </tr>
     </thead>
 
