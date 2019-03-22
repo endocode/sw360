@@ -15,69 +15,149 @@
 <%@include file="/html/init.jsp" %>
 <%-- the following is needed by liferay to display error messages--%>
 <%@include file="/html/utils/includes/errorKeyToMessage.jspf"%>
+
 <portlet:defineObjects/>
 <liferay-theme:defineObjects/>
 
-<portlet:actionURL var="updateCommonObligationsURL" name="updateCommonObligation">
-</portlet:actionURL>
+<portlet:resourceURL var="deleteAjaxURL">
+    <portlet:param name="<%=PortalConstants.ACTION%>" value='<%=PortalConstants.REMOVE_COMMON_OBLIGATION%>'/>
+</portlet:resourceURL>
+
+<portlet:renderURL var="addCommonObligationURL">
+    <portlet:param name="<%=PortalConstants.PAGENAME%>" value="<%=PortalConstants.PAGENAME_EDIT%>" />
+</portlet:renderURL>
+
+<jsp:useBean id="commonObligationList" type="java.util.List<org.eclipse.sw360.datahandler.thrift.commonObligations.CommonObligation>"  scope="request"/>
+
+<link rel="stylesheet" href="<%=request.getContextPath()%>/webjars/datatables.net-buttons-bs/css/buttons.bootstrap.min.css"/>
+<link rel="stylesheet" href="<%=request.getContextPath()%>/css/dataTable_Siemens.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/css/sw360.css">
 
 <div id="header"></div>
-<p class="pageHeader"><span class="pageHeaderBigSpan">OSS Obligation Administration</span></p>
+<p class="pageHeader">
+    <span class="pageHeaderBigSpan">CommonObligations</span> <span class="pageHeaderSmallSpan">(${commonObligationList.size()})</span>
+    <span class="pull-right">
+        <input type="button" class="addButton" onclick="window.location.href='<%=exportCommonObligationsURL%>'" value="Export CommonObligations">
+        <input type="button" class="addButton" onclick="window.location.href='<%=addCommonObligationURL%>'" value="Add CommonObligation">
+    </span>
+</p>
 
-<table class="info_table">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Text</th>
-        <th></th>
-    </tr>
-    </thead>
+<div id="searchInput" class="content1">
+    <%@ include file="/html/utils/includes/quickfilter.jspf" %>
+</div>
+<div id="commonObligationsTableDiv" class="content2">
+    <table id="commonObligationsTable" cellpadding="0" cellspacing="0" border="0" class="display">
+        <tfoot>
+        <tr>
+            <th colspan="4"></th>
+        </tr>
+        </tfoot>
+    </table>
+</div>
 
-    <tbody>
-    <tr>
-        <td>Download License Archive</td>
-        <td><a href="<portlet:resourceURL>
-                               <portlet:param name="<%=PortalConstants.ACTION%>" value='<%=PortalConstants.DOWNLOAD_LICENSE_BACKUP%>'/>
-                         </portlet:resourceURL>">
-            <img src="<%=request.getContextPath()%>/images/download_enabled.jpg" alt="Download">
-        </a>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
-            <span> Upload License Archive </span>
-            <form id="uploadLicenseArchiveForm" name="uploadLicenseArchiveForm" action="<%=updateLicenseArchiveURL%>" method="POST" enctype="multipart/form-data" style="margin-left: 30px;">
-                <div class="fileupload-buttons">
-                        <input id="<portlet:namespace/>LicenseArchivefileuploadInput" type="file" name="<portlet:namespace/>file">
-                    <label for="overwriteIfExternalIdMatches">
-                        <input type="checkbox" id="overwriteIfExternalIdMatches" name="<portlet:namespace/>overwriteIfExternalIdMatches" value="true" />
-                        overwrite if external IDs match
-                    </label>
-                    <label for="overwriteIfIdMatchesEvenWithoutExternalIdMatch">
-                        <input type="checkbox" id="overwriteIfIdMatchesEvenWithoutExternalIdMatch" name="<portlet:namespace/>overwriteIfIdMatchesEvenWithoutExternalIdMatch" value="true" />
-                        overwrite if IDs match
-                    </label>
-                    <span class="fileinput-button">
-                        <input type="submit" value="Upload License Archive" class="addButton" id="<portlet:namespace/>LicenseArchive-Submit" disabled>
-                    </span>
-                </div>
-            </form>
-        </td>
-    </tr>
-    <tr>
-        <td>Import all SPDX license information</td>
-        <td><a id="importSPDXLink" href="#">Import</a>
-        </td>
-    </tr>
-    <tr>
-        <td>Delete all license information</td>
-        <td><img src="<%=request.getContextPath()%>/images/Trash.png"
-                 alt="Delete all license information"
-                 onclick="deleteAllLicenseInformation()">
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<link rel="stylesheet" href="<%=request.getContextPath()%>/css/sw360.css">
 <link rel="stylesheet" href="<%=request.getContextPath()%>/webjars/jquery-confirm2/dist/jquery-confirm.min.css">
+
+<%--for javascript library loading --%>
+<%@ include file="/html/utils/includes/requirejs.jspf" %>
+<script>
+    AUI().use('liferay-portlet-url', function () {
+        var PortletURL = Liferay.PortletURL;
+
+        require(['jquery', 'utils/includes/quickfilter', 'modules/confirm', /* jquery-plugins: */ 'datatables.net', 'datatables.net-buttons', 'datatables.net-buttons.print', 'jquery-confirm'], function($, quickfilter, confirm) {
+            var commonObligationsTable,
+                commonObligationIdInURL = '<%=PortalConstants.COMMON_OBLIGATION_ID%>',
+                pageName = '<%=PortalConstants.PAGENAME%>';
+                pageEdit = '<%=PortalConstants.PAGENAME_EDIT%>';
+                baseUrl = '<%= PortletURLFactoryUtil.create(request, portletDisplay.getId(), themeDisplay.getPlid(), PortletRequest.RENDER_PHASE) %>';
+
+            // initializing
+            commonObligationsTable = createCommonObligationsTable();
+            quickfilter.addTable(commonObligationsTable);
+
+            // register event handlers
+            $('#commonObligationsTable').on('click', 'img.delete', function (event) {
+                var data = $(event.currentTarget).data();
+                deleteCommonObligation(data.commonObligationId, data.commonObligationName);
+            });
+
+            // helper functions
+            function createDetailURLfromCommonObligationId (paramVal) {
+                var portletURL = PortletURL.createURL( baseUrl ).setParameter(pageName,pageEdit).setParameter(commonObligationIdInURL, paramVal);
+                return portletURL.toString();
+            }
+
+            // catch ctrl+p and print dataTable
+            $(document).on('keydown', function(e){
+                if(e.ctrlKey && e.which === 80){
+                    e.preventDefault();
+                    commonObligationsTable.buttons('.custom-print-button').trigger();
+                }
+            });
+
+            function createCommonObligationsTable() {
+                var commonObligationsTable,
+                    result = [];
+
+                <core_rt:forEach items="${commonObligationList}" var="commonObligation">
+                    result.push({
+                        "DT_RowId": "${commonObligation.id}",
+                        "0": "<a href='"+createDetailURLfromCommonObligationId('${commonObligation.id}')+"' target='_self'><sw360:out value="${commonObligation.name}"/></a>",
+                        "1": "<sw360:out value="${commonObligation.text}"/>",
+                        "2": "<a href='"+createDetailURLfromCommonObligationId('${commonObligation.id}')+"' target='_self'><img src='<%=request.getContextPath()%>/images/edit.png' alt='Edit' title='Edit'></a>"
+                        +"<img class='delete' src='<%=request.getContextPath()%>/images/Trash.png' data-commonObligation-id='${commonObligation.id}' data-commonObligation-name='<sw360:out value="${commonObligation.fullname}"/>')\"  alt='Delete' title='Delete'>"
+                    });
+                </core_rt:forEach>
+
+                commonObligationsTable = $('#commonObligationsTable').DataTable({
+                    pagingType: "simple_numbers",
+                    dom: "lBrtip",
+                    buttons: [
+                        {
+                            extend: 'print',
+                            text: 'Print',
+                            autoPrint: true,
+                            className: 'custom-print-button',
+                            exportOptions: {
+                                columns: [0, 1, 2]
+                            }
+                        }
+                    ],
+                    data: result,
+                    columns: [
+                        {"title": "Name"},
+                        {"title": "Text"},
+                        {"title": "Actions"}
+                    ],
+                    autoWidth: false
+                });
+
+                return commonObligationsTable;
+            }
+
+            function deleteCommonObligation(id, name) {
+                function deleteCommonObligationInternal() {
+                    jQuery.ajax({
+                        type: 'POST',
+                        url: '<%=deleteAjaxURL%>',
+                        cache: false,
+                        data: {
+                            <portlet:namespace/>commonObligationId: id
+                        },
+                        success: function (data) {
+                            if(data.result == 'SUCCESS')
+                                commonObligationsTable.row('#' + id).remove().draw(false);
+                            else {
+                                $.alert("I could not delete the commonObligation!");
+                            }
+                        },
+                        error: function () {
+                            $.alert("I could not delete the commonObligation!");
+                        }
+                    });
+                }
+
+                confirm.confirmDeletion("Do you really want to delete the commonObligation <b>" + name + "</b> ?", deleteCommonObligationInternal);
+            }
+        });
+    });
+</script>
