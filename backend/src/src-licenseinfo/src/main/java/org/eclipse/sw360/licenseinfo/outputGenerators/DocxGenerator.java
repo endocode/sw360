@@ -379,7 +379,6 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     }
 
     private void fillDevelopmentDetailsTable(XWPFDocument document, Project project, User user) throws TException {
-        LOGGER.info("fill dev table called");
         XWPFTable table = document.getTables().get(2);
 
         int currentRow = 1;
@@ -391,22 +390,18 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             Release r = compClient.getReleaseById(rl.getId(), user);
             Component component = compClient.getComponentById(r.getComponentId(), user);
 
-            LOGGER.info(String.format("Component %s", component.getName()));
             XWPFTableRow row = table.insertNewTableRow(currentRow++);
 
             row.addNewTableCell().setText(component.getName());
 
-            String operatingSystems = component.getOperatingSystems().isEmpty() ? "Unknown operating systems" : String.join(" ", component.getOperatingSystems());
+            String operatingSystems = component.getOperatingSystemsSize() == 0 ? "Unknown operating systems" : String.join(" ", component.getOperatingSystems());
             row.addNewTableCell().setText(operatingSystems);
-            LOGGER.info(String.format("oses: %s", operatingSystems));
 
-            String langs = component.getLanguages().isEmpty() ? "Unknown languages" : String.join(" ", component.getLanguages());
+            String langs = component.getLanguagesSize() == 0 ? "Unknown languages" : String.join(" ", component.getLanguages());
             row.addNewTableCell().setText(langs);
-            LOGGER.info(String.format("langs: %s", langs));
 
-            String platforms = component.getSoftwarePlatforms().isEmpty() ? "Unknown platforms" : String.join(" ", component.getSoftwarePlatforms());
+            String platforms = component.getSoftwarePlatformsSize() == 0 ? "Unknown platforms" : String.join(" ", component.getSoftwarePlatforms());
             row.addNewTableCell().setText(platforms);
-            LOGGER.info(String.format("plats: %s", platforms));
         }
     }
 
