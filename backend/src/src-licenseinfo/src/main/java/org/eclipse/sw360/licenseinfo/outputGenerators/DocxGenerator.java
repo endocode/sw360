@@ -240,56 +240,23 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
         }
     }
 
-    private class ObligationKey {
-        public final String topic;
-        public final String text;
-        public ObligationKey(String topic, String text) {
-            this.topic = topic;
-            this.text = text;
-        }
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ObligationKey)) return false;
-            ObligationKey key = (ObligationKey) o;
-            return topic == key.topic && text == key.text;
-        }
-        @Override
-        public int hashCode() {
-            return (topic == null ? 0 : topic.hashCode()) ^ (text == null ? 0 : text.hashCode());
-        }
-    }
-
     private void fillSpecialOSSRisksTable(XWPFDocument document, Project project, Collection<ObligationParsingResult> obligationResults) throws XmlException, TException {
         XWPFTable table = document.getTables().get(1);
+        final int[] currentRow = new int[]{0};
 
-        Map<ObligationKey,ArrayList<String>> collatedObligations = new HashMap<ObligationKey,ArrayList<String>>();
-        for(ObligationParsingResult result : obligationResults) {
-            if(result.getStatus() != ObligationInfoRequestStatus.SUCCESS) {
-                continue;
-            }
-            for(Obligation obligation : result.getObligations()) {
-                ObligationKey key = new ObligationKey(obligation.getTopic(), obligation.getText());
-                if(!collatedObligations.containsKey(key)) {
-                    collatedObligations.put(key, new ArrayList<String>());
-                }
-                ArrayList<String> licenses = collatedObligations.get(key);
-                for(String license : obligation.getLicenseIDs()) {
-                    if(!licenses.contains(license)) {
-                        licenses.add(license);
-                    }
-                }
-            }
-        }
-        int currentRow = 1;
-        for( ObligationKey key :  collatedObligations.keySet()) {
-            ArrayList<String> licenses = collatedObligations.get(key);
-            XWPFTableRow row = table.insertNewTableRow(currentRow++);
-            String licensesString = String.join(" ", licenses);
-            row.addNewTableCell().setText(key.topic);
-            row.addNewTableCell().setText(licensesString);
-            row.addNewTableCell().setText(key.text);
-        }
+        obligationResults.stream()
+                .filter(opr -> opr.getStatus() == ObligationInfoRequestStatus.SUCCESS)
+                .flatMap(opr -> opr.getObligations().stream())
+                .distinct()
+                .forEach(o ->
+                        {
+                            currentRow[0] = currentRow[0] + 1;
+                            XWPFTableRow row = table.insertNewTableRow(currentRow[0]);
+                            row.addNewTableCell().setText(o.getTopic());
+                            row.addNewTableCell().setText(String.join(" ", o.getLicenseIDs()));
+                            row.addNewTableCell().setText(o.getText());
+                        }
+                );
     }
 
     private void fillOverview3rdPartyComponentTable(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults) throws XmlException {
