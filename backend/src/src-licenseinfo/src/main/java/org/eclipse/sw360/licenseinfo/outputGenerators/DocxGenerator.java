@@ -156,8 +156,8 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             String remarksAdditionalRequirementsText = project.getRemarksAdditionalRequirements();
             String projectDescription = project.getDescription();
 
-            fillOverview3rdPartyComponentTable(document, projectLicenseInfoResults);
             fillDevelopmentDetailsTable(document, project, user);
+            fillOverview3rdPartyComponentTable(document, projectLicenseInfoResults);
 
             fillOwnerGroup(document, project);
             fillAttendeesTable(document, project);
