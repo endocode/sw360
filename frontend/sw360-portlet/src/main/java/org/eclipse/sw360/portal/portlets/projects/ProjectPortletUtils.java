@@ -21,6 +21,7 @@ import org.eclipse.sw360.datahandler.thrift.*;
 import org.eclipse.sw360.datahandler.thrift.attachments.*;
 import org.eclipse.sw360.datahandler.thrift.components.ReleaseLink;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.LicenseNameWithText;
+import org.eclipse.sw360.datahandler.thrift.projects.CommonObligation;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectLink;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectRelationship;
@@ -417,5 +418,10 @@ public class ProjectPortletUtils {
         }
 
         return mergedUsage;
+    }
+
+    public static void updateFromRequest(PortletRequest request, CommonObligation commonObligation) {
+        PortletUtils.setFieldValue(request, commonObligation, CommonObligation._Fields.NAME, CommonObligation.metaDataMap.get(CommonObligation._Fields.NAME), "");
+        PortletUtils.setFieldValue(request, commonObligation, CommonObligation._Fields.MESSAGE, CommonObligation.metaDataMap.get(CommonObligation._Fields.NAME), "");
     }
 }

@@ -175,6 +175,11 @@ public class ProjectHandler implements ProjectService.Iface {
         return null;
     }
 
+    @Override
+    public CommonObligation getCommonObligation(String id, User user) throws TException {
+        return handler.getCommonObligation(id, user);
+    }
+
     ////////////////////////////
     // ADD INDIVIDUAL OBJECTS //
     ////////////////////////////
