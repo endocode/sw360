@@ -17,7 +17,6 @@ import org.apache.poi.xwpf.usermodel.*;
 import org.apache.thrift.TException;
 import org.apache.xmlbeans.XmlException;
 import org.eclipse.sw360.datahandler.common.CommonUtils;
-import org.eclipse.sw360.datahandler.common.SW360Utils;
 import org.eclipse.sw360.datahandler.thrift.SW360Exception;
 import org.eclipse.sw360.datahandler.thrift.ThriftClients;
 import org.eclipse.sw360.datahandler.thrift.components.Component;
@@ -29,17 +28,15 @@ import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
 import org.eclipse.sw360.datahandler.thrift.licenses.Todo;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
-import org.eclipse.sw360.datahandler.thrift.projects.ProjectRelationship;
-import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
 import org.eclipse.sw360.datahandler.thrift.users.User;
 import org.eclipse.sw360.datahandler.thrift.users.UserService;
-import org.eclipse.sw360.licenseinfo.LicenseInfoHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.eclipse.sw360.datahandler.common.CommonUtils.nullToEmptyString;
@@ -56,6 +53,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     private static final String DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final String DOCX_OUTPUT_TYPE = "docx";
     public static final String UNKNOWN_LICENSE = "Unknown";
+    private static final Long ADDITIONAL_REQ_THRESHOLD = new Long(3);
 
     public DocxGenerator(OutputFormatVariant outputFormatVariant, String description) {
         super(DOCX_OUTPUT_TYPE, description, true, DOCX_MIME_TYPE, outputFormatVariant);
@@ -406,51 +404,31 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     }
 
     private void fillAdditionalRequirementsTable(XWPFDocument document, Collection<ObligationParsingResult> obligationResults) throws XmlException {
-        Map<String, Integer> licenseAppearances = new HashMap<String, Integer>();
-        for(ObligationParsingResult result : obligationResults) {
-            if(result.getStatus() != ObligationInfoRequestStatus.SUCCESS) {
-                continue;
-            }
-            for(Obligation obligation : result.getObligations()) {
-                for(String license : obligation.getLicenseIDs()) {
-                    if(!licenseAppearances.containsKey(license)) {
-                        licenseAppearances.put(license, 1);
-                    } else {
-                        int count = licenseAppearances.get(license);
-                        licenseAppearances.put(license, count+1);
-                    }
-                }
-            }
-        }
-
-        Map<ObligationKey,ArrayList<String>> collatedObligations = new HashMap<ObligationKey,ArrayList<String>>();
-        for(ObligationParsingResult result : obligationResults) {
-            if(result.getStatus() != ObligationInfoRequestStatus.SUCCESS) {
-                continue;
-            }
-            for(Obligation obligation : result.getObligations()) {
-                ObligationKey key = new ObligationKey(obligation.getTopic(), obligation.getText());
-                if(!collatedObligations.containsKey(key)) {
-                    collatedObligations.put(key, new ArrayList<String>());
-                }
-                ArrayList<String> licenses = collatedObligations.get(key);
-                for(String license : obligation.getLicenseIDs()) {
-                    if(!licenses.contains(license) && licenseAppearances.get(license) >= 3) {
-                        licenses.add(license);
-                    }
-                }
-            }
-        }
+        Set<String> mostLicenses = obligationResults.stream()
+                .filter(opr -> opr.getStatus() == ObligationInfoRequestStatus.SUCCESS)
+                .flatMap(opr -> opr.getObligations().stream())
+                .flatMap(o -> o.getLicenseIDs().stream())
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue() >= ADDITIONAL_REQ_THRESHOLD)
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toSet());
 
         XWPFTable table = document.getTables().get(4);
         int currentRow = 1;
-        for( ObligationKey key :  collatedObligations.keySet()) {
-            ArrayList<String> licenses = collatedObligations.get(key);
+
+        List<Obligation> obligations = obligationResults.stream()
+                .filter(opr -> opr.getStatus() == ObligationInfoRequestStatus.SUCCESS)
+                .flatMap(opr -> opr.getObligations().stream())
+                .filter(o -> o.getLicenseIDs().stream()
+                            .anyMatch(lid -> mostLicenses.stream().anyMatch(mlid -> mlid.equals(lid))))
+                .collect(Collectors.toList());
+
+        for (Obligation o : obligations) {
             XWPFTableRow row = table.insertNewTableRow(currentRow++);
-            String licensesString = String.join(" ", licenses);
-            row.addNewTableCell().setText(key.topic);
-            row.addNewTableCell().setText(licensesString);
-            row.addNewTableCell().setText(key.text);
+            row.addNewTableCell().setText(o.getTopic());
+            row.addNewTableCell().setText(String.join("", o.getLicenseIDs()));
+            row.addNewTableCell().setText(o.getText());
         }
     }
 
