@@ -332,13 +332,17 @@ service ProjectService {
     set<Project> searchByExternalIds(1: map<string, set<string>> externalIds, 2: User user);
 
     /**
-    * get all OSSObligations
-    **/
+     * get all OSSObligations
+     */
     list<CommonObligation> getCommonObligations(1: User user);
 
     /**
-    * get fulfilled OSSObligations per project
-    **/
+     * get fulfilled OSSObligations per project
+     */
     list<CommonObligation> getFulfilledCommonObligations(1: Project project, 2: User user);
 
+    /**
+     * get single common obligation per id
+     */
+    CommonObligation getCommonObligation(1: string id, 2: User user);
 }

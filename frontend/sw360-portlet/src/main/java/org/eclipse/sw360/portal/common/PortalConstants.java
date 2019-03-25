@@ -234,6 +234,11 @@ public class PortalConstants {
     public static final String LICENSE_INFO_RELEASE_TO_ATTACHMENT = "licenseInfoAttachmentSelected";
     public static final String SW360_USER = "sw360User";
 
+    //! Specialized keys for commonObligations
+    public static final String COMMON_OBLIGATION = "commonObligation";
+    public static final String COMMON_OBLIGATION_ID = "commonObligationId";
+    public static final String COMMON_OBLIGATION_LIST = "commonObligationList";
+
     //! Serve resource generic keywords
     public static final String ACTION = "action";
     public static final String ACTION_CANCEL = "action_cancel";
@@ -354,6 +359,9 @@ public class PortalConstants {
     public static final String UPDATE_VULNERABILITIES__FAILED_IDS = "updateVulnerabilities_failedIds";
     public static final String UPDATE_VULNERABILITIES__NEW_IDS = "updateVulnerabilities_newIds";
     public static final String UPDATE_VULNERABILITIES__UPDATED_IDS = "updateVulnerabilities_updatedIds";
+
+    // commonobligations actions
+    public static final String REMOVE_COMMON_OBLIGATION = "remove_common_obligation";
 
     // Excel export
     public static final String EXPORT_TO_EXCEL = "export_to_excel";
