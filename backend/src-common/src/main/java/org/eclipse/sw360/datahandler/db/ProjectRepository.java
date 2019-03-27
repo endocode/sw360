@@ -134,6 +134,15 @@ public class ProjectRepository extends SummaryAwareRepository<Project> {
                     "  }" +
                     "}";
 
+    private static final String FULL_BY_COMMON_OBLIGATION_ID_VIEW =
+            "function(doc) {" +
+                    "  if (doc.type == 'project') {" +
+                    "    for(var i in doc.commonObligations) {" +
+                    "      emit(i, doc._id);" +
+                    "    }" +
+                    "  }" +
+                    "}";
+
     private static final String BY_EXTERNAL_IDS =
             "function(doc) {" +
                     "  if (doc.type == 'project') {" +
@@ -201,6 +210,11 @@ public class ProjectRepository extends SummaryAwareRepository<Project> {
     @View(name = "fullbylinkingprojectid", map = FULL_BY_LINKING_PROJECT_ID_VIEW)
     public Set<Project> searchByLinkingProjectId(String id) {
         return new HashSet<>(queryView("bylinkingprojectid", id));
+    }
+
+    @View(name = "fullbycommonobligationid", map = FULL_BY_COMMON_OBLIGATION_ID_VIEW)
+    public Set<Project> searchByCommonObligationId(String id) {
+        return new HashSet<>(queryView("bycommonobligationid", id));
     }
 
     @View(name = "myprojects", map = MY_PROJECTS_VIEW)

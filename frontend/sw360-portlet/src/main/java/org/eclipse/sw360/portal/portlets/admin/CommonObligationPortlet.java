@@ -110,15 +110,15 @@ public class CommonObligationPortlet extends Sw360Portlet {
             try {
                 ProjectService.Iface projectClient = thriftClients.makeProjectClient();
                 CommonObligation commonObligation = projectClient.getCommonObligation(id, user);
-                //ProjectPortletUtils.updateCommonObligationFromRequest(request, commonObligation);
-                //RequestStatus requestStatus = projectClient.updateCommonObligation(commonObligation, user);
-                //setSessionMessage(request, requestStatus, "CommonObligation", "update", commonObligation.getName());
+                ProjectPortletUtils.updateCommonObligationFromRequest(request, commonObligation);
+                RequestStatus requestStatus = projectClient.updateCommonObligation(commonObligation, user);
+                setSessionMessage(request, requestStatus, "CommonObligation", "update", commonObligation.getName());
             } catch (TException e) {
                 log.error("Error fetching common obligation from backend!", e);
             }
         }
         else{
-            addVendor(request);
+            addCommonObligation(request);
         }
     }
 
@@ -129,16 +129,16 @@ public class CommonObligationPortlet extends Sw360Portlet {
         response.setRenderParameter(PAGENAME, PAGENAME_VIEW);
     }
 
-    private void addVendor(ActionRequest request)  {
+    private void addCommonObligation(ActionRequest request)  {
         final CommonObligation commonObligation = new CommonObligation();
-        //ProjectPortletUtils.updateCommonObligationFromRequest(request, commonObligation);
+        ProjectPortletUtils.updateCommonObligationFromRequest(request, commonObligation);
 
-//        try {
-//            ProjectService.Iface projectClient = thriftClients.makeProjectClient();
-//            projectClient.addCommonObligation(commonObligation);
-//        } catch (TException e) {
-//            log.error("Error adding common obligation", e);
-//        }
+        try {
+            CommonObligation.Iface projectClient = thriftClients.makeCommonObligationClient();
+            projectClient.addCommonObligation(commonObligation);
+        } catch (TException e) {
+            log.error("Error adding common obligation", e);
+        }
     }
 
 }

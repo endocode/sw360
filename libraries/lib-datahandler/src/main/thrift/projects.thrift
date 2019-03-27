@@ -14,6 +14,7 @@ include "attachments.thrift"
 include "vendors.thrift"
 include "components.thrift"
 include "sw360.thrift"
+include "commonobligations.thrift"
 
 namespace java org.eclipse.sw360.datahandler.thrift.projects
 namespace php sw360.thrift.projects
@@ -32,6 +33,7 @@ typedef attachments.Attachment Attachment
 typedef components.ReleaseLink ReleaseLink
 typedef components.ReleaseClearingStatusData ReleaseClearingStatusData
 typedef sw360.AddDocumentRequestSummary AddDocumentRequestSummary
+typedef commonobligations.CommonObligation CommonObligation
 
 const string CLEARING_TEAM_UNKNOWN = "Unknown"
 
@@ -60,12 +62,6 @@ enum ProjectClearingState {
     OPEN = 0,
     IN_PROGRESS = 1,
     CLOSED = 2,
-}
-
-struct CommonObligation {
-    1: string id,
-    2: string message,
-    3: string name,
 }
 
 struct Project {
@@ -330,19 +326,4 @@ service ProjectService {
      * external ids can have multiple values to one key
      */
     set<Project> searchByExternalIds(1: map<string, set<string>> externalIds, 2: User user);
-
-    /**
-     * get all OSSObligations
-     */
-    list<CommonObligation> getCommonObligations(1: User user);
-
-    /**
-     * get fulfilled OSSObligations per project
-     */
-    list<CommonObligation> getFulfilledCommonObligations(1: Project project, 2: User user);
-
-    /**
-     * get single common obligation per id
-     */
-    CommonObligation getCommonObligation(1: string id, 2: User user);
 }
