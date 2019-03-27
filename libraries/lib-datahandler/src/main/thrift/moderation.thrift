@@ -25,7 +25,6 @@ typedef sw360.ModerationState ModerationState
 typedef components.Component Component
 typedef components.Release Release
 typedef projects.Project Project
-typedef projects.CommonObligation CommonObligation
 typedef users.User User
 typedef licenses.License License
 typedef licenses.Todo Todo
@@ -68,14 +67,11 @@ struct ModerationRequest {
     22: optional Project projectAdditions,
     23: optional License licenseAdditions,//only moderation of todos is supported
     24: optional User user,
-    25: optional CommonObligation commonObligationAdditions,
 
     30: optional Component componentDeletions,
     31: optional Release releaseDeletions,
     32: optional Project projectDeletions,
     33: optional License licenseDeletions,
-    36: optional CommonObligation commonObligationDeletions,
-
 }
 
 service ModerationService {
@@ -118,11 +114,6 @@ service ModerationService {
     RequestStatus createLicenseRequest(1: License license, 2: User user);
 
     /**
-      * write moderation request for oss obligation to database
-      **/
-    RequestStatus createCommonObligationRequest(1: CommonObligation obligation, 2: User user);
-
-    /**
       * write moderation request for activating a user account to database
       **/
     oneway void createUserRequest(1: User user);
@@ -144,12 +135,6 @@ service ModerationService {
       * set requestingUser of moderation request to user
       **/
     oneway void createProjectDeleteRequest(1: Project project, 2: User user);
-
-    /**
-      * write moderation request for deleting oss obligation to database,
-      * set requestingUser of moderation request to user
-      **/
-    oneway void createCommonObligationDeleteRequest(1: CommonObligation obligation, 2: User user);
 
     /**
      * get list of moderation requests for document with documentId currently present in database
