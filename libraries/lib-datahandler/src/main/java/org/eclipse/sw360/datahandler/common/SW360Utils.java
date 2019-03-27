@@ -28,7 +28,7 @@ import org.eclipse.sw360.datahandler.thrift.*;
 import org.eclipse.sw360.datahandler.thrift.components.*;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
-import org.eclipse.sw360.datahandler.thrift.projects.CommonObligation;
+import org.eclipse.sw360.datahandler.thrift.commonobligations.CommonObligation;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectLink;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
