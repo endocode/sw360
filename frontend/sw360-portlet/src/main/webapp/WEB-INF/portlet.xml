@@ -657,31 +657,6 @@
     </portlet>
 
     <portlet>
-        <portlet-name>commonObligations</portlet-name>
-        <display-name>Common Obligations</display-name>
-        <portlet-class>
-            org.eclipse.sw360.portal.portlets.admin.CommonObligationPortlet
-        </portlet-class>
-        <init-param>
-            <name>view-template</name>
-            <value>/html/admin/commonObligations/view.jsp</value>
-        </init-param>
-        <expiration-cache>0</expiration-cache>
-        <supports>
-            <mime-type>text/html</mime-type>
-            <portlet-mode>view</portlet-mode>
-        </supports>
-        <portlet-info>
-            <title>Common Obligations</title>
-            <short-title>Common Obligations</short-title>
-            <keywords/>
-        </portlet-info>
-        <security-role-ref>
-            <role-name>administrator</role-name>
-        </security-role-ref>
-    </portlet>
-
-    <portlet>
         <portlet-name>signup</portlet-name>
         <display-name>Sign-Up</display-name>
         <portlet-class>
