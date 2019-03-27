@@ -29,7 +29,6 @@ import org.eclipse.sw360.datahandler.thrift.components.Release;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.moderation.DocumentType;
 import org.eclipse.sw360.datahandler.thrift.moderation.ModerationRequest;
-import org.eclipse.sw360.datahandler.thrift.projects.CommonObligation;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectClearingState;
 import org.eclipse.sw360.datahandler.thrift.users.User;
@@ -343,29 +342,6 @@ public class ModerationDatabaseHandler {
         CommonUtils.addAll(moderators, getUsersAtLeast(UserGroup.CLEARING_ADMIN, project.getBusinessUnit(), false));
         CommonUtils.addAll(moderators, getUsersAtLeast(UserGroup.ADMIN));
         return moderators;
-    }
-
-    public RequestStatus createRequest(CommonObligation obligation, User user) {
-        CommonObligation dbobligation;
-        try{
-            dbobligation = projectDatabaseHandler.getCommonObligation(obligation.getId(), user);
-        } catch (SW360Exception e) {
-            log.error("Could not get original common obligation from database. Could not generate moderation request.", e);
-            return RequestStatus.FAILURE;
-        }
-        // Define moderators
-        Set<String> moderators = getLicenseModerators(user.getDepartment());
-        ModerationRequest request = createStubRequest(user, false, obligation.getId(), moderators);
-
-        // Set meta-data
-        request.setDocumentType(DocumentType.COMMON_OBLIGATION);
-        request.setDocumentName(SW360Utils.printName(obligation));
-
-        // Fill the request
-        ModerationRequestGenerator generator = new CommonObligationModerationRequestGenerator();
-        request = generator.setAdditionsAndDeletions(request, obligation, dbobligation);
-        addOrUpdate(request, user);
-        return RequestStatus.SENT_TO_MODERATOR;
     }
 
     public RequestStatus createRequest(License license, User user) {

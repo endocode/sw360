@@ -13,7 +13,6 @@ package org.eclipse.sw360.datahandler.permissions;
 import org.eclipse.sw360.datahandler.thrift.components.Component;
 import org.eclipse.sw360.datahandler.thrift.components.Release;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
-import org.eclipse.sw360.datahandler.thrift.projects.CommonObligation;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.users.User;
 import org.eclipse.sw360.datahandler.thrift.users.UserGroup;
@@ -89,8 +88,6 @@ public class PermissionUtils {
             return (DocumentPermissions<T>) new UserPermissions((User) document, user);
         } else if (document instanceof Vulnerability) {
             return (DocumentPermissions<T>) new VulnerabilityPermissions((Vulnerability) document, user);
-        } else if (document instanceof CommonObligation) {
-            return (DocumentPermissions<T>) new CommonObligationPermissions((CommonObligation) document, user);
         } else {
             throw new IllegalArgumentException("Invalid input type!");
         }

@@ -65,7 +65,6 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
     private static final String DUMMY_NEW_PROJECT_ID = "newproject";
 
     private final ProjectRepository repository;
-    private final CommonObligationRepository obligationRepository;
     private final ProjectVulnerabilityRatingRepository pvrRepository;
     private final ProjectModerator moderator;
     private final AttachmentConnector attachmentConnector;
@@ -105,7 +104,6 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
         // Create the repositories
         repository = new ProjectRepository(db);
         pvrRepository = new ProjectVulnerabilityRatingRepository(db);
-        obligationRepository = new CommonObligationRepository(db);
 
         // Create the moderator
         this.moderator = moderator;
@@ -149,20 +147,6 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
         }
 
         return project;
-    }
-
-    public CommonObligation getCommonObligation(String id, User user) throws SW360Exception {
-        CommonObligation obligation = obligationRepository.get(id);
-
-        if (obligation == null) {
-            throw fail("Could not fetch OSS obligation from database! id=" + id);
-        }
-
-        if (!makePermission(obligation, user).isActionAllowed(RequestedAction.READ)) {
-            throw fail("User %s is not allowed to view the requested obligation %s !", user, obligation);
-        }
-
-        return obligation;
     }
 
     ////////////////////////////
@@ -297,23 +281,6 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
             return RequestStatus.SUCCESS;
         } else {
             return moderator.deleteProject(project, user);
-        }
-    }
-
-    public RequestStatus deleteCommonObligation(String id, User user) throws SW360Exception {
-        CommonObligation co = obligationRepository.get(id);
-        assertNotNull(co);
-
-        if (checkIfInUse(id)) {
-            return RequestStatus.IN_USE;
-        }
-
-        // Remove the project if the user is allowed to do it by himself
-        if (makePermission(co, user).isActionAllowed(RequestedAction.DELETE)) {
-            removeCommonObligationAndCleanUp(co);
-            return RequestStatus.SUCCESS;
-        } else {
-            return moderator.deleteCommonObligation(co, user);
         }
     }
 
@@ -713,12 +680,6 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
         }
 
         return releaseIds;
-    }
-
-    public List<CommonObligation> getCommonObligations(User user) {
-        return obligationRepository.getAll().stream()
-                .filter(o -> makePermission(o, user).isActionAllowed(RequestedAction.READ))
-                .collect(Collectors.toList());
     }
 
     private void sendMailNotificationsForNewProject(Project project, String user) {

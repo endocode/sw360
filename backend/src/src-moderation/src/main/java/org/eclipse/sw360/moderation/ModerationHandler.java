@@ -22,7 +22,6 @@ import org.eclipse.sw360.datahandler.thrift.components.Release;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.moderation.ModerationRequest;
 import org.eclipse.sw360.datahandler.thrift.moderation.ModerationService;
-import org.eclipse.sw360.datahandler.thrift.projects.CommonObligation;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.users.User;
 import org.eclipse.sw360.moderation.db.ModerationDatabaseHandler;
@@ -91,14 +90,6 @@ public class ModerationHandler implements ModerationService.Iface {
     }
 
     @Override
-    public RequestStatus createCommonObligationRequest(CommonObligation obligation, User user) throws TException {
-        assertUser(user);
-        assertNotNull(obligation);
-
-        return handler.createRequest(obligation, user);
-    }
-
-    @Override
     public void createUserRequest(User user) throws TException {
         assertUser(user);
 
@@ -127,11 +118,6 @@ public class ModerationHandler implements ModerationService.Iface {
         assertNotNull(project);
 
         handler.createRequest(project, user, true);
-    }
-
-    @Override
-    public void createCommonObligationDeleteRequest(CommonObligation obligation, User user) throws TException {
-
     }
 
     @Override
