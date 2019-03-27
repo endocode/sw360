@@ -420,7 +420,7 @@ public class ProjectPortletUtils {
         return mergedUsage;
     }
 
-    public static void updateFromRequest(PortletRequest request, CommonObligation commonObligation) {
+    public static void updateCommonObligationFromRequest(PortletRequest request, CommonObligation commonObligation) {
         PortletUtils.setFieldValue(request, commonObligation, CommonObligation._Fields.NAME, CommonObligation.metaDataMap.get(CommonObligation._Fields.NAME), "");
         PortletUtils.setFieldValue(request, commonObligation, CommonObligation._Fields.MESSAGE, CommonObligation.metaDataMap.get(CommonObligation._Fields.NAME), "");
     }

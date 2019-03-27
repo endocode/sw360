@@ -300,6 +300,23 @@ public class ProjectDatabaseHandler extends AttachmentAwareDatabaseHandler {
         }
     }
 
+    public RequestStatus deleteCommonObligation(String id, User user) throws SW360Exception {
+        CommonObligation co = obligationRepository.get(id);
+        assertNotNull(co);
+
+        if (checkIfInUse(id)) {
+            return RequestStatus.IN_USE;
+        }
+
+        // Remove the project if the user is allowed to do it by himself
+        if (makePermission(co, user).isActionAllowed(RequestedAction.DELETE)) {
+            removeCommonObligationAndCleanUp(co);
+            return RequestStatus.SUCCESS;
+        } else {
+            return moderator.deleteCommonObligation(co, user);
+        }
+    }
+
     public boolean checkIfInUse(String projectId) {
         final Set<Project> usingProjects = repository.searchByLinkingProjectId(projectId);
        return !usingProjects.isEmpty();

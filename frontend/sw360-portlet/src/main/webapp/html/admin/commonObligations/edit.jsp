@@ -49,7 +49,7 @@
     <p class="pageHeader"><span class="pageHeaderBigSpan"><sw360:out value="${commonObligation.name}"/></span>
         <core_rt:if test="${not addMode}" >
             <input type="button" class="addButton" onclick="deleteConfirmed('Do you really want to delete the commonObligation <b><sw360:out value="${commonObligation.fullname}"/></b> ?', deleteCommonObligation)"
-                   value="Delete <sw360:out value="${commonObligation.fullname}"/>">
+                   value="Delete <sw360:out value="${commonObligation.name}"/>">
         </core_rt:if>
     </p>
 </div>
@@ -89,17 +89,6 @@
             <input type="button" value="Cancel" onclick="cancel()" class="cancelButton">
         </core_rt:if>
     </form>
-
-    <core_rt:if test="${releaseList.size() > 0}" >
-        <p>Used by the following release(s)</p>
-        <table style="padding-left: 3px; padding-right: 3px"> <tr>
-        <core_rt:forEach var="release" items="${releaseList}" varStatus="loop">
-            <td><sw360:DisplayReleaseLink release="${release}" /></td>
-            <core_rt:if test="${loop.count > 0 and  loop.count %  4 == 0}" ></tr> <tr> </core_rt:if>
-        </core_rt:forEach>
-        </tr>
-        </table>
-    </core_rt:if>
 
 </div>
 

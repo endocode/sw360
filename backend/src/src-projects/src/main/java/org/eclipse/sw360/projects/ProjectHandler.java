@@ -222,6 +222,13 @@ public class ProjectHandler implements ProjectService.Iface {
         return handler.deleteProject(id, user);
     }
 
+    @Override
+    public RequestStatus deleteCommonObligation(String id, User user) throws TException {
+        assertId(id);
+        assertUser(user);
+
+        return handler.deleteCommonObligation(id, user);
+    }
 
     //////////////////////
     // HELPER FUNCTIONS //
