@@ -15,6 +15,7 @@ include "vendors.thrift"
 include "components.thrift"
 include "sw360.thrift"
 include "commonobligations.thrift"
+include "licenses.thrift"
 
 namespace java org.eclipse.sw360.datahandler.thrift.projects
 namespace php sw360.thrift.projects
@@ -34,6 +35,7 @@ typedef components.ReleaseLink ReleaseLink
 typedef components.ReleaseClearingStatusData ReleaseClearingStatusData
 typedef sw360.AddDocumentRequestSummary AddDocumentRequestSummary
 typedef commonobligations.CommonObligation CommonObligation
+typedef licenses.Todo Todo
 
 const string CLEARING_TEAM_UNKNOWN = "Unknown"
 
@@ -122,7 +124,7 @@ struct Project {
     138: optional string specialRisks3rdParty,
     139: optional string deliveryChannels,
     140: optional string remarksAdditionalRequirements,
-    141: optional list<string> fulfilledOssObligationIds,
+    141: optional map<Todo,bool> todos,
 
     // Urls for the project
     50: optional string homepage,
