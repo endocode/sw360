@@ -56,6 +56,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     private static final long ADDITIONAL_REQ_THRESHOLD = 3;
     public static final int ADDITIONAL_REQ_TABLE_INDEX = 4;
     public static final int DEV_DETAIL_TABLE_INDEX = 2;
+    private static final int COMMON_RULES_TABLE_INDEX = 5;
 
     public DocxGenerator(OutputFormatVariant outputFormatVariant, String description) {
         super(DOCX_OUTPUT_TYPE, description, true, DOCX_MIME_TYPE, outputFormatVariant);
@@ -176,6 +177,8 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             fillDevelopmentDetailsTable(document, project, user);
             fillOverview3rdPartyComponentTable(document, projectLicenseInfoResults);
             fillAdditionalRequirementsTable(document, obligationResults);
+
+            fillCommonRulesTable(document, project);
 
             // because of the impossible API component subsections must be the last thing in the docx file
             // the rest of the sections must be generated after this
@@ -550,5 +553,19 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             setText(document.createParagraph().createRun(), nullToEmptyString(licenseNameWithText.getLicenseText()));
             addNewLines(document, 1);
         }
+    }
+
+    private void fillCommonRulesTable(XWPFDocument document, Project project) {
+        XWPFTable table = document.getTables().get(COMMON_RULES_TABLE_INDEX);
+
+        final int[] currentRow = new int[]{0};
+
+        project.getTodos().entrySet().stream()
+                .forEachOrdered(todo -> {
+                    currentRow[0] = currentRow[0] + 1;
+                    XWPFTableRow row = table.insertNewTableRow(currentRow[0]);
+                    row.addNewTableCell().setText(todo.getKey().getText());
+                    row.addNewTableCell().setText(todo.getValue() ? "y" : "n");
+                });
     }
 }
