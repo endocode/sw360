@@ -116,11 +116,11 @@
         <tr><th>Obligation</th><th>Fulfilled</th></tr>
     </thead>
     <tbody>
-        <core_rt:forEach items="${fulfilledObligations}" var="entry">
-            <tr>
-                <td>${entry.message}</td>
-                <td><input type="checkbox" name="${entry.id}"></td>
-            </tr>
+        <core_rt:forEach items="${projectObligations}" var="entry">
+           <tr>
+              <td>${entry.getKey().getText()}</td>
+              <td><h:selectBooleanCheckbox value="#{entry.getValue()}"/></td>
+           </tr>
         </core_rt:forEach>
     </tbody>
 </table>
