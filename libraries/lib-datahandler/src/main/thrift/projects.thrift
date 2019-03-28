@@ -124,7 +124,7 @@ struct Project {
     138: optional string specialRisks3rdParty,
     139: optional string deliveryChannels,
     140: optional string remarksAdditionalRequirements,
-    141: optional map<Todo,bool> todos,
+    141: optional set<string> fulfilledTodoIds,
 
     // Urls for the project
     50: optional string homepage,

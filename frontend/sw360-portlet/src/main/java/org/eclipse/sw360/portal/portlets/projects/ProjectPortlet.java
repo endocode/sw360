@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.json.*;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.model.Organization;
+import com.liferay.portal.model.Resource;
 import com.liferay.portal.util.PortalUtil;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.eclipse.sw360.datahandler.common.*;
 import org.eclipse.sw360.datahandler.common.WrappedException.WrappedTException;
 import org.eclipse.sw360.datahandler.couchdb.lucene.LuceneAwareDatabaseConnector;
@@ -839,7 +841,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
         request.setAttribute(DOCUMENT_TYPE, SW360Constants.TYPE_PROJECT);
         request.setAttribute(DOCUMENT_ID, id);
         request.setAttribute(DEFAULT_LICENSE_INFO_HEADER_TEXT, getProjectDefaultLicenseInfoHeaderText());
-        request.setAttribute(PROJECT_OBLIGATIONS, getProjectObligations());
+
         request.setAttribute(DEFAULT_OBLIGATIONS_TEXT, getProjectDefaultObligationsText());
         if (id != null) {
             try {
@@ -863,6 +865,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
                         PermissionUtils.makePermission(project, user).isActionAllowed(RequestedAction.WRITE));
 
                 addProjectBreadcrumb(request, response, project);
+                request.setAttribute(PROJECT_OBLIGATIONS, getProjectObligations(project));
 
             } catch (TException e) {
                 log.error("Error fetching project from backend!", e);
@@ -1287,14 +1290,18 @@ public class ProjectPortlet extends FossologyAwarePortlet {
         }
     }
 
-    private List<Todo> getProjectObligations() {
+    private Map<Todo, Boolean> getProjectObligations(Project project) {
         final LicenseService.Iface licenseClient = thriftClients.makeLicenseClient();
+        Set<String> fulfilledTodoIds = project.getFulfilledTodoIdsSize() > 0 ? project.getFulfilledTodoIds() : Collections.emptySet();
         try {
             List<Todo> obligations = licenseClient.getTodos();
-            return obligations.stream().filter(o -> o.isValidForProject()).collect(Collectors.toList());
+            return obligations.stream().filter(o -> o.isValidForProject())
+                    .collect(Collectors.toMap(
+                            todo -> todo,
+                            todo -> fulfilledTodoIds.stream().anyMatch(id -> id.equals(todo.getId()))));
         } catch (TException e) {
             log.error("Could not load obligations from backend.", e);
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
     }
 
