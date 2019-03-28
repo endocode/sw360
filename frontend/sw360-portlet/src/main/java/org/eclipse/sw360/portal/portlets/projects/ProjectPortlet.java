@@ -30,6 +30,8 @@ import org.eclipse.sw360.datahandler.thrift.components.*;
 import org.eclipse.sw360.datahandler.thrift.cvesearch.CveSearchService;
 import org.eclipse.sw360.datahandler.thrift.cvesearch.VulnerabilityUpdateStatus;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.*;
+import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
+import org.eclipse.sw360.datahandler.thrift.licenses.Todo;
 import org.eclipse.sw360.datahandler.thrift.projects.*;
 import org.eclipse.sw360.datahandler.thrift.users.RequestedAction;
 import org.eclipse.sw360.datahandler.thrift.users.User;
@@ -837,7 +839,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
         request.setAttribute(DOCUMENT_TYPE, SW360Constants.TYPE_PROJECT);
         request.setAttribute(DOCUMENT_ID, id);
         request.setAttribute(DEFAULT_LICENSE_INFO_HEADER_TEXT, getProjectDefaultLicenseInfoHeaderText());
-        //request.setAttribute(FULFILLED_OBLIGATIONS, getProjectFulfilledObligations());
+        request.setAttribute(PROJECT_OBLIGATIONS, getProjectObligations());
         request.setAttribute(DEFAULT_OBLIGATIONS_TEXT, getProjectDefaultObligationsText());
         if (id != null) {
             try {
@@ -1285,16 +1287,16 @@ public class ProjectPortlet extends FossologyAwarePortlet {
         }
     }
 
-//    private List<FulfilledObligation> getProjectFulfilledObligations() {
-//        final LicenseInfoService.Iface licenseInfoClient = thriftClients.makeLicenseInfoClient();
-//        try {
-//            List<FulfilledObligation> listOfFulfilledObligations = licenseInfoClient.getFulfilledObligations();
-//            return listOfFulfilledObligations;
-//        } catch (TException e) {
-//            log.error("Could not load obligations from backend.", e);
-//            return new ArrayList<FulfilledObligation>();
-//        }
-//    }
+    private List<Todo> getProjectObligations() {
+        final LicenseService.Iface licenseClient = thriftClients.makeLicenseClient();
+        try {
+            List<Todo> obligations = licenseClient.getTodos();
+            return obligations.stream().filter(o -> o.isValidForProject()).collect(Collectors.toList());
+        } catch (TException e) {
+            log.error("Could not load obligations from backend.", e);
+            return Collections.emptyList();
+        }
+    }
 
     private void serveProjectList(ResourceRequest request, ResourceResponse response) throws IOException, PortletException {
         HttpServletRequest originalServletRequest = PortalUtil.getOriginalServletRequest(PortalUtil.getHttpServletRequest(request));
