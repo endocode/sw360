@@ -52,6 +52,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     private static final String DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final String DOCX_OUTPUT_TYPE = "docx";
     public static final String UNKNOWN_LICENSE = "Unknown";
+    private static final int COMMON_RULES_TABLE_INDEX = 5;
 
     public DocxGenerator(OutputFormatVariant outputFormatVariant, String description) {
         super(DOCX_OUTPUT_TYPE, description, true, DOCX_MIME_TYPE, outputFormatVariant);
@@ -168,6 +169,8 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
 
 
             fillSpecialOSSRisksTable(document, project, obligationResults);
+
+            fillCommonRulesTable(document, project);
 
             // because of the impossible API component subsections must be the last thing in the docx file
             // the rest of the sections must be generated after this
@@ -515,5 +518,19 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             setText(document.createParagraph().createRun(), nullToEmptyString(licenseNameWithText.getLicenseText()));
             addNewLines(document, 1);
         }
+    }
+
+    private void fillCommonRulesTable(XWPFDocument document, Project project) {
+        XWPFTable table = document.getTables().get(COMMON_RULES_TABLE_INDEX);
+
+        final int[] currentRow = new int[]{0};
+
+        project.getTodos().entrySet().stream()
+                .forEachOrdered(todo -> {
+                    currentRow[0] = currentRow[0] + 1;
+                    XWPFTableRow row = table.insertNewTableRow(currentRow[0]);
+                    row.addNewTableCell().setText(todo.getKey().getText());
+                    row.addNewTableCell().setText(todo.getValue() ? "y" : "n");
+                });
     }
 }
