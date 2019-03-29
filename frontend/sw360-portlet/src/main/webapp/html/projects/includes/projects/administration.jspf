@@ -9,6 +9,8 @@
   ~ http://www.eclipse.org/legal/epl-v10.html
 --%>
 
+<%@ taglib prefix="core_rt" uri="http://java.sun.com/jstl/core_rt" %>
+
 <table class="table info_table" id="clearing">
     <thead>
     <tr>
@@ -104,7 +106,10 @@
         <core_rt:forEach items="${projectObligations}" var="entry">
             <tr>
                 <td>${entry.getKey().getText()}</td>
-                <td><h:selectBooleanCheckbox value="#{entry.getValue()}" disabled=true/></td>
+                <td><input type="checkbox" value="${entry.getKey().getId()}"
+                    disabled="disabled"
+                    <core_rt:if test="${entry.getValue()}">checked="checked"</core_rt:if>
+                /></td>
             </tr>
         </core_rt:forEach>
     </tbody>

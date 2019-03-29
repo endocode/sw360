@@ -107,6 +107,10 @@ public class ProjectPortletUtils {
                 case EXTERNAL_IDS:
                     project.setExternalIds(PortletUtils.getExternalIdMapFromRequest(request));
                     break;
+                case FULFILLED_TODO_IDS:
+                    String[] ids = request.getParameterValues(field.toString());
+                    project.setFulfilledTodoIds(Arrays.stream(ids).collect(Collectors.toSet()));
+                    break;
                 default:
                     setFieldValue(request, project, field);
             }

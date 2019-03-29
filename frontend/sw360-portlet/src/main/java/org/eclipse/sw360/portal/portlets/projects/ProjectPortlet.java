@@ -1082,6 +1082,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
 
             request.setAttribute(PROJECT, project);
             request.setAttribute(DOCUMENT_ID, id);
+            request.setAttribute(PROJECT_OBLIGATIONS, getProjectObligations(project));
 
             setAttachmentsInRequest(request, project);
             try {
