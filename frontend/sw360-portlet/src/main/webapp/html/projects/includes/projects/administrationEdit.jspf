@@ -11,6 +11,8 @@
 
 <%@ page import="org.eclipse.sw360.datahandler.thrift.projects.Project" %>
 
+<%@ taglib prefix="core_rt" uri="http://java.sun.com/jstl/core_rt" %>
+
 <table class="table info_table" id="ProjectClearingInfo" title="Clearing">
     <thead>
     <tr>
@@ -117,10 +119,14 @@
     </thead>
     <tbody>
         <core_rt:forEach items="${projectObligations}" var="entry">
-           <tr>
-              <td>${entry.getKey().getText()}</td>
-              <td><h:selectBooleanCheckbox value="#{entry.getValue()}"/></td>
-           </tr>
+            <tr>
+                <td>${entry.getKey().getText()}</td>
+                <td><input type="checkbox"
+                    name="<portlet:namespace/><%=Project._Fields.FULFILLED_TODO_IDS%>"
+                    value="${entry.getKey().getId()}"
+                    <core_rt:if test="${entry.getValue()}">checked="checked"</core_rt:if>
+                /></td>
+            </tr>
         </core_rt:forEach>
     </tbody>
 </table>
