@@ -23,6 +23,10 @@ import org.eclipse.sw360.datahandler.thrift.components.Component;
 import org.eclipse.sw360.datahandler.thrift.components.ComponentService;
 import org.eclipse.sw360.datahandler.thrift.components.Release;
 import org.eclipse.sw360.datahandler.thrift.components.ReleaseLink;
+import org.eclipse.sw360.datahandler.common.SW360Utils;
+import org.eclipse.sw360.datahandler.thrift.SW360Exception;
+import org.eclipse.sw360.datahandler.thrift.ThriftClients;
+import org.eclipse.sw360.datahandler.thrift.components.Release;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.*;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
@@ -555,12 +559,11 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
         }
     }
 
-    private void fillCommonRulesTable(XWPFDocument document, Project project) {
+    private void fillCommonRulesTable(XWPFDocument document, Project project) throws TException {
         XWPFTable table = document.getTables().get(COMMON_RULES_TABLE_INDEX);
-
         final int[] currentRow = new int[]{0};
 
-        project.getTodos().entrySet().stream()
+        SW360Utils.getProjectObligations(project).entrySet().stream()
                 .forEachOrdered(todo -> {
                     currentRow[0] = currentRow[0] + 1;
                     XWPFTableRow row = table.insertNewTableRow(currentRow[0]);

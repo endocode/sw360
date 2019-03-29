@@ -20,7 +20,6 @@ import org.eclipse.sw360.datahandler.thrift.fossology.FossologyService;
 import org.eclipse.sw360.datahandler.thrift.licenseinfo.LicenseInfoService;
 import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
 import org.eclipse.sw360.datahandler.thrift.moderation.ModerationService;
-import org.eclipse.sw360.datahandler.thrift.commonobligations.CommonObligationService;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
 import org.eclipse.sw360.datahandler.thrift.projectimport.ProjectImportService;
 import org.eclipse.sw360.datahandler.thrift.schedule.ScheduleService;
@@ -155,9 +154,5 @@ public class ThriftClients {
 
     public ProjectImportService.Iface makeWsImportClient() {
         return new ProjectImportService.Client(makeProtocol(BACKEND_URL, WSIMPORT_SERVICE_URL));
-    }
-
-    public CommonObligationService.Iface makeCommonObligationClient() {
-        return new CommonObligationService.Client(makeProtocol(BACKEND_URL, COMMON_OBLIGATION_SERVICE_URL));
     }
 }

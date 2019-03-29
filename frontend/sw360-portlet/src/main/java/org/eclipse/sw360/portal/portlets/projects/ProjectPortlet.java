@@ -865,7 +865,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
                         PermissionUtils.makePermission(project, user).isActionAllowed(RequestedAction.WRITE));
 
                 addProjectBreadcrumb(request, response, project);
-                request.setAttribute(PROJECT_OBLIGATIONS, getProjectObligations(project));
+                request.setAttribute(PROJECT_OBLIGATIONS, SW360Utils.getProjectObligations(project));
 
             } catch (TException e) {
                 log.error("Error fetching project from backend!", e);
@@ -1082,7 +1082,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
 
             request.setAttribute(PROJECT, project);
             request.setAttribute(DOCUMENT_ID, id);
-            request.setAttribute(PROJECT_OBLIGATIONS, getProjectObligations(project));
+            request.setAttribute(PROJECT_OBLIGATIONS, SW360Utils.getProjectObligations(project));
 
             setAttachmentsInRequest(request, project);
             try {
@@ -1113,6 +1113,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
                 }
                 request.setAttribute(USING_PROJECTS, Collections.emptySet());
                 request.setAttribute(ALL_USING_PROJECTS_COUNT, 0);
+                request.setAttribute(PROJECT_OBLIGATIONS, SW360Utils.getProjectObligations(project));
 
                 SessionMessages.add(request, "request_processed", "New Project");
             }
@@ -1291,20 +1292,7 @@ public class ProjectPortlet extends FossologyAwarePortlet {
         }
     }
 
-    private Map<Todo, Boolean> getProjectObligations(Project project) {
-        final LicenseService.Iface licenseClient = thriftClients.makeLicenseClient();
-        Set<String> fulfilledTodoIds = project.getFulfilledTodoIdsSize() > 0 ? project.getFulfilledTodoIds() : Collections.emptySet();
-        try {
-            List<Todo> obligations = licenseClient.getTodos();
-            return obligations.stream().filter(o -> o.isValidForProject())
-                    .collect(Collectors.toMap(
-                            todo -> todo,
-                            todo -> fulfilledTodoIds.stream().anyMatch(id -> id.equals(todo.getId()))));
-        } catch (TException e) {
-            log.error("Could not load obligations from backend.", e);
-            return Collections.emptyMap();
-        }
-    }
+
 
     private void serveProjectList(ResourceRequest request, ResourceResponse response) throws IOException, PortletException {
         HttpServletRequest originalServletRequest = PortalUtil.getOriginalServletRequest(PortalUtil.getHttpServletRequest(request));

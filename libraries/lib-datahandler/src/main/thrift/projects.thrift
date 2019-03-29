@@ -34,7 +34,6 @@ typedef attachments.Attachment Attachment
 typedef components.ReleaseLink ReleaseLink
 typedef components.ReleaseClearingStatusData ReleaseClearingStatusData
 typedef sw360.AddDocumentRequestSummary AddDocumentRequestSummary
-typedef commonobligations.CommonObligation CommonObligation
 typedef licenses.Todo Todo
 
 const string CLEARING_TEAM_UNKNOWN = "Unknown"

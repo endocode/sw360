@@ -28,7 +28,7 @@ import org.eclipse.sw360.datahandler.thrift.*;
 import org.eclipse.sw360.datahandler.thrift.components.*;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
-import org.eclipse.sw360.datahandler.thrift.commonobligations.CommonObligation;
+import org.eclipse.sw360.datahandler.thrift.licenses.Todo;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectLink;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
@@ -190,20 +190,27 @@ public class SW360Utils {
         return getVersionedName(release.getName(), release.getVersion());
     }
 
-    public static String printName(CommonObligation obligation) {
-        if (obligation == null || isNullOrEmpty(obligation.getName())) {
-            return "New CommonObligation";
-        }
-
-        return obligation.getName();
-    }
-
     public static String printFullname(Release release) {
         if (release == null || isNullOrEmpty(release.getName())) {
             return "New Release";
         }
         String vendorName = Optional.ofNullable(release.getVendor()).map(Vendor::getShortname).orElse(null);
         return getReleaseFullname(vendorName, release.getName(), release.getVersion());
+    }
+
+    public static Map<Todo, Boolean> getProjectObligations(Project project) {
+        final LicenseService.Iface licenseClient = new ThriftClients().makeLicenseClient();
+        Set<String> fulfilledTodoIds = project.getFulfilledTodoIdsSize() > 0 ? project.getFulfilledTodoIds() : Collections.emptySet();
+        try {
+            List<Todo> obligations = licenseClient.getTodos();
+            return obligations.stream().filter(o -> o.isValidForProject())
+                    .collect(Collectors.toMap(
+                            todo -> todo,
+                            todo -> fulfilledTodoIds.stream().anyMatch(id -> id.equals(todo.getId()))));
+        } catch (TException e) {
+            log.error("Could not load obligations from backend.", e);
+            return Collections.emptyMap();
+        }
     }
 
     @NotNull
