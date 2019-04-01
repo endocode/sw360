@@ -58,9 +58,9 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     private static final String DOCX_OUTPUT_TYPE = "docx";
     public static final String UNKNOWN_LICENSE = "Unknown";
     private static final long ADDITIONAL_REQ_THRESHOLD = 3;
-    public static final int ADDITIONAL_REQ_TABLE_INDEX = 4;
+    public static final int ADDITIONAL_REQ_TABLE_INDEX = 5;
     public static final int DEV_DETAIL_TABLE_INDEX = 2;
-    private static final int COMMON_RULES_TABLE_INDEX = 5;
+    private static final int COMMON_RULES_TABLE_INDEX = 4;
 
     public DocxGenerator(OutputFormatVariant outputFormatVariant, String description) {
         super(DOCX_OUTPUT_TYPE, description, true, DOCX_MIME_TYPE, outputFormatVariant);
