@@ -100,7 +100,7 @@
 
 <table class="table info_table" id="obligations">
     <thead>
-        <tr><th>Obligation</th><th>Fulfilled</th></tr>
+        <tr><th>Obligation</th><th>Fulfilled</th><th>Modified</th></tr>
     </thead>
     <tbody>
         <core_rt:forEach items="${projectObligations}" var="entry">
@@ -108,8 +108,9 @@
                 <td>${entry.getKey().getText()}</td>
                 <td><input type="checkbox" value="${entry.getKey().getId()}"
                     disabled="disabled"
-                    <core_rt:if test="${entry.getValue()}">checked="checked"</core_rt:if>
+                    <core_rt:if test="${entry.getValue().fulfilled}">checked="checked"</core_rt:if>
                 /></td>
+                <td>${entry.getValue().
             </tr>
         </core_rt:forEach>
     </tbody>
