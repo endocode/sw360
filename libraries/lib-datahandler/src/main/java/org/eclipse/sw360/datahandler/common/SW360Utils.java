@@ -76,14 +76,30 @@ public class SW360Utils {
     }
 
     public static class TodoInfo {
-        public boolean fulfilled;
-        public String timestamp;
-        public String user;
+        public final boolean fulfilled;
+        public final String timestamp;
+        public final String user;
 
-        public TodoInfo(boolean fulfilled, String timestamp, String user) {
-            this.fulfilled = fulfilled;
-            this.timestamp = timestamp;
-            this.user = user;
+        public TodoInfo(ProjectTodo projectTodo) {
+            final UserService.Iface userClient = new ThriftClients().makeUserClient();
+
+            String userString = "";
+
+            User user;
+            try {
+                if (projectTodo.userId != null) {
+                    user = userClient.getUser(projectTodo.userId);
+                    if (user != null) {
+                        userString = String.format("%s <%s>", user.getFullname(), user.getEmail());
+                    }
+                }
+            } catch (TException te) {
+                log.error("Could not load user from backend.", te);
+            }
+
+            this.user = userString;
+            this.fulfilled = projectTodo.fulfilled;
+            this.timestamp = Strings.nullToEmpty(projectTodo.updated);
         }
     }
 
@@ -217,28 +233,20 @@ public class SW360Utils {
 
     public static Map<Todo, TodoInfo> getProjectObligations(Project project) {
         final LicenseService.Iface licenseClient = new ThriftClients().makeLicenseClient();
-        final UserService.Iface userClient = new ThriftClients().makeUserClient();
+
         Set<ProjectTodo> projectTodos = project.getTodosSize() > 0 ? project.getTodos() : Collections.emptySet();
         try {
-            List<Todo> validTodos = licenseClient.getTodos()
-                    .stream().filter(o -> o.isValidForProject())
-                    .collect(Collectors.toList());
-
-            Map<Todo, TodoInfo> ret = new HashMap<>();
-
-            for (Todo todo : validTodos) {
-                ProjectTodo pt = projectTodos.stream()
-                        .filter(projectTodo -> projectTodo.getTodoId().equals(todo.getId()))
-                        .findFirst()
-                        .orElseGet(ProjectTodo::new);
-                User user = userClient.getUser((pt.userId));
-                // is user.toString() enough?
-                ret.put(todo, new TodoInfo(pt.fulfilled, pt.updated, user.toString()));
-            }
-
-            return ret;
-        } catch (TException e) {
-            log.error("Could not load obligations from backend.", e);
+            return licenseClient.getTodos().stream()
+                    .filter(o -> o.isValidForProject())
+                    .collect(Collectors.toMap(
+                            todo -> todo,
+                            todo -> new TodoInfo(projectTodos.stream()
+                                        .filter(projectTodo -> projectTodo.getTodoId().equals(todo.getId()))
+                                        .findFirst()
+                                        .orElseGet(ProjectTodo::new))
+                            )
+                    );
+        } catch (TException te) {
             return Collections.emptyMap();
         }
     }
