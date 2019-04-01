@@ -110,7 +110,8 @@ public class ProjectPortletUtils {
                 case FULFILLED_TODO_IDS:
                     String[] ids = request.getParameterValues(field.toString());
                     Set<String> idSet = ids != null ? Arrays.stream(ids).collect(Collectors.toSet()) : Collections.emptySet();
-                    project.setFulfilledTodoIds(idSet);
+                    // Assemble project todos from ids
+                    //project.setTodos()
                     break;
                 default:
                     setFieldValue(request, project, field);
