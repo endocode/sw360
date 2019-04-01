@@ -524,7 +524,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                     currentRow[0] = currentRow[0] + 1;
                     XWPFTableRow row = table.insertNewTableRow(currentRow[0]);
                     row.addNewTableCell().setText(todo.getKey().getText());
-                    row.addNewTableCell().setText(todo.getValue() ? "y" : "n");
+                    row.addNewTableCell().setText(todo.getValue() ? "yes" : "no");
                 });
     }
 }
