@@ -123,7 +123,7 @@ struct Project {
     138: optional string specialRisks3rdParty,
     139: optional string deliveryChannels,
     140: optional string remarksAdditionalRequirements,
-    141: optional set<string> fulfilledTodoIds,
+    141: optional set<ProjectTodo> todos,
 
     // Urls for the project
     50: optional string homepage,
@@ -158,6 +158,13 @@ struct ProjectLink {
 struct ProjectWithReleaseRelationTuple {
     1: required Project project,
     2: required ProjectReleaseRelationship relation,
+}
+
+struct ProjectTodo {
+    1: required string todoId;
+    2: required string userId;
+    3: required string updated;
+    4: required bool fulfilled;
 }
 
 service ProjectService {

@@ -24,7 +24,10 @@ import com.google.common.collect.Sets;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TEnum;
 import org.apache.thrift.TException;
-import org.eclipse.sw360.datahandler.thrift.*;
+import org.eclipse.sw360.datahandler.thrift.ProjectReleaseRelationship;
+import org.eclipse.sw360.datahandler.thrift.SW360Exception;
+import org.eclipse.sw360.datahandler.thrift.ThriftClients;
+import org.eclipse.sw360.datahandler.thrift.ThriftUtils;
 import org.eclipse.sw360.datahandler.thrift.components.*;
 import org.eclipse.sw360.datahandler.thrift.licenses.License;
 import org.eclipse.sw360.datahandler.thrift.licenses.LicenseService;
@@ -32,6 +35,7 @@ import org.eclipse.sw360.datahandler.thrift.licenses.Todo;
 import org.eclipse.sw360.datahandler.thrift.projects.Project;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectLink;
 import org.eclipse.sw360.datahandler.thrift.projects.ProjectService;
+import org.eclipse.sw360.datahandler.thrift.projects.ProjectTodo;
 import org.eclipse.sw360.datahandler.thrift.users.User;
 import org.eclipse.sw360.datahandler.thrift.vendors.Vendor;
 import org.eclipse.sw360.datahandler.thrift.vulnerabilities.Vulnerability;
@@ -68,6 +72,12 @@ public class SW360Utils {
 
     private SW360Utils() {
         // Utility class with only static functions
+    }
+
+    class TodoInfo {
+        boolean fulfilled;
+        String timestamp;
+        String user;
     }
 
     static{
@@ -198,15 +208,21 @@ public class SW360Utils {
         return getReleaseFullname(vendorName, release.getName(), release.getVersion());
     }
 
-    public static Map<Todo, Boolean> getProjectObligations(Project project) {
+    public static Map<Todo, TodoInfo> getProjectObligations(Project project) {
         final LicenseService.Iface licenseClient = new ThriftClients().makeLicenseClient();
-        Set<String> fulfilledTodoIds = project.getFulfilledTodoIdsSize() > 0 ? project.getFulfilledTodoIds() : Collections.emptySet();
+        Set<ProjectTodo> projectTodos = project.getTodosSize() > 0 ? project.getTodos() : Collections.emptySet();
         try {
             List<Todo> obligations = licenseClient.getTodos();
             return obligations.stream().filter(o -> o.isValidForProject())
                     .collect(Collectors.toMap(
                             todo -> todo,
-                            todo -> fulfilledTodoIds.stream().anyMatch(id -> id.equals(todo.getId()))));
+                            todo -> projectTodos.stream()
+                                    .filter(projectTodo -> projectTodo.getTodoId().equals(todo.getId()))
+                                    .findFirst()
+                                    .orElseGet(ProjectTodo::new)
+                                    .
+                            )
+                    );
         } catch (TException e) {
             log.error("Could not load obligations from backend.", e);
             return Collections.emptyMap();
