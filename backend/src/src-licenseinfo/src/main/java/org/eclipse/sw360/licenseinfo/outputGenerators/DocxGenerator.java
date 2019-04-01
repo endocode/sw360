@@ -47,7 +47,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     private static final String DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final String DOCX_OUTPUT_TYPE = "docx";
     public static final String UNKNOWN_LICENSE = "Unknown";
-    private static final int COMMON_RULES_TABLE_INDEX = 5;
+    private static final int COMMON_RULES_TABLE_INDEX = 4;
 
     public DocxGenerator(OutputFormatVariant outputFormatVariant, String description) {
         super(DOCX_OUTPUT_TYPE, description, true, DOCX_MIME_TYPE, outputFormatVariant);
