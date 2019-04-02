@@ -108,9 +108,9 @@
                 <td>${entry.getKey().getText()}</td>
                 <td><input type="checkbox" value="${entry.getKey().getId()}"
                     disabled="disabled"
-                    <core_rt:if test="${entry.getValue().fulfilled}">checked="checked"</core_rt:if>
+                    <core_rt:if test="${entry.getValue().isFulfilled()}">checked="checked"</core_rt:if>
                 /></td>
-                <td>${entry.getValue().
+                <td>${entry.getValue().getModificationHint()}</td>
             </tr>
         </core_rt:forEach>
     </tbody>

@@ -101,6 +101,14 @@ public class SW360Utils {
             this.fulfilled = projectTodo.fulfilled;
             this.timestamp = Strings.nullToEmpty(projectTodo.updated);
         }
+
+        public String getModificationHint() {
+            return String.format("%s %s",this.user, this.timestamp);
+        }
+
+        public boolean isFulfilled() {
+            return fulfilled;
+        }
     }
 
     static{

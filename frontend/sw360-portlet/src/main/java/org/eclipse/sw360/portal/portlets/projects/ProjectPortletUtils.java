@@ -120,11 +120,11 @@ public class ProjectPortletUtils {
 
     private static void updateProjectTodosFromRequest(String[] ids, String userId, Project project) {
         Set<String> idSet = ids != null ? Arrays.stream(ids).collect(Collectors.toSet()) : Collections.emptySet();
-
+        Set<ProjectTodo> currentTodods = project.getTodosSize() > 0 ? project.getTodos() : Collections.emptySet();
         String updated = SW360Utils.getCreatedOnTime();
 
         Set<ProjectTodo> projectTodos = idSet.stream()
-                .map(id -> project.getTodos().stream()
+                .map(id -> currentTodods.stream()
                         .filter(pt -> pt.getTodoId().equals(id))
                         .findAny()
                         .orElseGet(() -> new ProjectTodo(id, userId, updated, true)))
@@ -140,7 +140,7 @@ public class ProjectPortletUtils {
                         });
 
         // update changed to not fulfilled
-        Set<ProjectTodo> changedToNotFulfilled = project.getTodos().stream()
+        Set<ProjectTodo> changedToNotFulfilled = currentTodods.stream()
                 .filter(projectTodo -> idSet.stream().noneMatch(id -> id.equals(projectTodo.todoId)))
                 .map(projectTodo -> {
                     projectTodo.fulfilled = false;
