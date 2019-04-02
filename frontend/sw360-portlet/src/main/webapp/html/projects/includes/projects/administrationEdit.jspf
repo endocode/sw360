@@ -122,7 +122,7 @@
             <tr>
                 <td>${entry.getKey().getText()}</td>
                 <td><input type="checkbox"
-                    name="<portlet:namespace/><%=Project._Fields.FULFILLED_TODO_IDS%>"
+                    name="<portlet:namespace/><%=Project._Fields.TODOS%>"
                     value="${entry.getKey().getId()}"
                     <core_rt:if test="${entry.getValue()}">checked="checked"</core_rt:if>
                 /></td>
