@@ -356,13 +356,13 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
 
             row.addNewTableCell().setText(component.getName());
 
-            String operatingSystems = component.getOperatingSystemsSize() == 0 ? "Unknown operating systems" : String.join(" ", component.getOperatingSystems());
+            String operatingSystems = component.getOperatingSystemsSize() == 0 ? "N/A" : String.join(" ", component.getOperatingSystems());
             row.addNewTableCell().setText(operatingSystems);
 
-            String langs = component.getLanguagesSize() == 0 ? "Unknown languages" : String.join(" ", component.getLanguages());
+            String langs = component.getLanguagesSize() == 0 ? "N/A" : String.join(" ", component.getLanguages());
             row.addNewTableCell().setText(langs);
 
-            String platforms = component.getSoftwarePlatformsSize() == 0 ? "Unknown platforms" : String.join(" ", component.getSoftwarePlatforms());
+            String platforms = component.getSoftwarePlatformsSize() == 0 ? "N/A" : String.join(" ", component.getSoftwarePlatforms());
             row.addNewTableCell().setText(platforms);
         }
     }
