@@ -300,15 +300,17 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     }
 
     private void writeComponentSubsections(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults, Collection<ObligationParsingResult> obligationResults) throws SW360Exception, XmlException {
-
-        XmlCursor cursor =
-                document.getParagraphs().stream()
-                .filter(p -> p.getText().equals("Readme_OSS"))
-                .map(p -> p.getCTP().newCursor())
-                .findFirst()
-                .orElseThrow(() -> new SW360Exception("Corrupt template; unable to set cursor"));
+        XmlCursor cursor = document.getTables().get(ADDITIONAL_REQ_TABLE_INDEX).getCTTbl().newCursor();
+        cursor.toEndToken();
 
         for (LicenseInfoParsingResult result : projectLicenseInfoResults) {
+            while (cursor.currentTokenType() != XmlCursor.TokenType.START && cursor.hasNextToken()) {
+                cursor.toNextToken();
+            }
+
+            if (cursor.currentTokenType() != XmlCursor.TokenType.START) {
+                throw new SW360Exception("Corrupt template; unable find start token");
+            }
 
             XWPFParagraph title = document.insertNewParagraph(cursor);
             title.setStyle(STYLE_HEADING_3);
