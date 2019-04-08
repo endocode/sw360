@@ -142,7 +142,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             fillReleaseBulletList(document, projectLicenseInfoResults);
             fillReleaseDetailList(document, projectLicenseInfoResults, includeObligations);
             fillLicenseList(document, projectLicenseInfoResults);
-        }
+    }
 
     private void fillReportDocument(
         XWPFDocument document,
@@ -227,7 +227,12 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                         continue;
                     }
 
-                    User user = userClient.getByEmail(email);
+                    User user = null;
+                    try {
+                         user = userClient.getByEmail(email);
+                    } catch (TException te) {
+
+                    }
 
                     XWPFTableRow row = table.insertNewTableRow(currentRow++);
                     String name = email;
@@ -236,7 +241,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                     }
                     String department = "N.A.";
                     if(user != null) {
-                        name = user.getDepartment();
+                        department = user.getDepartment();
                     }
 
                     row.addNewTableCell().setText(name);
