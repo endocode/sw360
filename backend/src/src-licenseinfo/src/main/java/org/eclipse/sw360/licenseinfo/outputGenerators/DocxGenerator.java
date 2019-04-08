@@ -46,16 +46,23 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     private static final Logger LOGGER = Logger.getLogger(DocxGenerator.class);
     private static final String UNKNOWN_LICENSE_NAME = "Unknown license name";
     private static final String UNKNOWN_FILE_NAME = "Unknown file name";
+    private static final String UNKNOWN_LICENSE = "Unknown";
     private static final String TODO_DEFAULT_TEXT = "todo not determined so far.";
 
     private static final String DOCX_TEMPLATE_FILE = "/templateFrontpageContent.docx";
     private static final String DOCX_TEMPLATE_REPORT_FILE = "/templateReport.docx";
     private static final String DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final String DOCX_OUTPUT_TYPE = "docx";
-    public static final String UNKNOWN_LICENSE = "Unknown";
+
     private static final long ADDITIONAL_REQ_THRESHOLD = 3;
-    public static final int ADDITIONAL_REQ_TABLE_INDEX = 4;
+
+    public static final int OVERVIEW_TABLE_INDEX = 0;
+    public static final int SPECIAL_OSS_RISKS_TABLE_INDEX = 1;
     public static final int DEV_DETAIL_TABLE_INDEX = 2;
+    public static final int THIRD_PARTY_COMPONENT_OVERVIEW_TABLE_INDEX = 3;
+    public static final int ADDITIONAL_REQ_TABLE_INDEX = 4;
+
+
 
     public DocxGenerator(OutputFormatVariant outputFormatVariant, String description) {
         super(DOCX_OUTPUT_TYPE, description, true, DOCX_MIME_TYPE, outputFormatVariant);
@@ -193,7 +200,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     }
 
     private void fillAttendeesTable(XWPFDocument document, Project project) throws XmlException, TException {
-        XWPFTable table = document.getTables().get(0);
+        XWPFTable table = document.getTables().get(OVERVIEW_TABLE_INDEX);
 
         int currentRow = 6;
 
@@ -240,7 +247,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     }
 
     private void fillSpecialOSSRisksTable(XWPFDocument document, Project project, Collection<ObligationParsingResult> obligationResults) throws XmlException, TException {
-        XWPFTable table = document.getTables().get(1);
+        XWPFTable table = document.getTables().get(SPECIAL_OSS_RISKS_TABLE_INDEX);
         final int[] currentRow = new int[]{0};
 
         obligationResults.stream()
@@ -259,7 +266,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     }
 
     private void fillOverview3rdPartyComponentTable(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults) throws XmlException {
-        XWPFTable table = document.getTables().get(3);
+        XWPFTable table = document.getTables().get(THIRD_PARTY_COMPONENT_OVERVIEW_TABLE_INDEX);
 
         int currentRow = 1;
         for(LicenseInfoParsingResult result : projectLicenseInfoResults) {
