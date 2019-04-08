@@ -400,6 +400,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                 .entrySet().stream()
                 .filter(entry -> entry.getValue().longValue() >= threshold)
                 .map(entry -> entry.getKey())
+                .map(license -> license.replace("\n", "").replace("\r", ""))
                 .collect(Collectors.toSet());
     }
 
@@ -411,7 +412,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                 .filter(opr -> opr.getStatus() == ObligationInfoRequestStatus.SUCCESS)
                 .flatMap(opr -> opr.getObligations().stream())
                 .filter(o -> o.getLicenseIDs().stream()
-                            .anyMatch(lid -> mostLicenses.parallelStream().anyMatch(mlid -> mlid.equals(lid))))
+                            .anyMatch(lid -> mostLicenses.parallelStream().anyMatch(mlid -> mlid.equals(lid.replace("\n", "").replace("\r", "")))))
                 .forEach(o -> {
                             currentRow[0] = currentRow[0] + 1;
                             XWPFTableRow row = table.insertNewTableRow(currentRow[0]);
