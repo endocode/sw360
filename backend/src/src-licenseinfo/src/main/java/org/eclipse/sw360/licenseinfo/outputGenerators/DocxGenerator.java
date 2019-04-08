@@ -163,7 +163,8 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             String deliveryChannelsText = project.getDeliveryChannels();
             String remarksAdditionalRequirementsText = project.getRemarksAdditionalRequirements();
             String projectDescription = project.getDescription();
-
+            // extract licenses that appear at least ADDITIONAL_REQ_THRESHOLD times
+            Set<String> mostLicenses = extractMostCommonLicenses(obligationResults, ADDITIONAL_REQ_THRESHOLD);
 
             fillOwnerGroup(document, project);
             fillAttendeesTable(document, project);
@@ -184,7 +185,8 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             fillSpecialOSSRisksTable(document, project, obligationResults);
             fillDevelopmentDetailsTable(document, project, user);
             fillOverview3rdPartyComponentTable(document, projectLicenseInfoResults);
-            fillAdditionalRequirementsTable(document, obligationResults);
+            replaceText(document, "$list_comma_sep_licenses_above_threshold", String.join(", ", mostLicenses));
+            fillAdditionalRequirementsTable(document, obligationResults, mostLicenses);
 
             // because of the impossible API component subsections must be the last thing in the docx file
             // the rest of the sections must be generated after this
@@ -388,10 +390,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
                 .collect(Collectors.toSet());
     }
 
-    private void fillAdditionalRequirementsTable(XWPFDocument document, Collection<ObligationParsingResult> obligationResults) throws XmlException {
-        // extract licenses that appear at least ADDITIONAL_REQ_THRESHOLD times
-        Set<String> mostLicenses = extractMostCommonLicenses(obligationResults, ADDITIONAL_REQ_THRESHOLD);
-
+    private void fillAdditionalRequirementsTable(XWPFDocument document, Collection<ObligationParsingResult> obligationResults, Set<String> mostLicenses) throws XmlException {
         XWPFTable table = document.getTables().get(ADDITIONAL_REQ_TABLE_INDEX);
         final int[] currentRow = new int[]{0};
 
