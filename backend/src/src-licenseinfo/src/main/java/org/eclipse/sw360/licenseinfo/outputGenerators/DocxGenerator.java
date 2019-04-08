@@ -204,7 +204,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
     private void fillAttendeesTable(XWPFDocument document, Project project) throws XmlException, TException {
         XWPFTable table = document.getTables().get(OVERVIEW_TABLE_INDEX);
 
-        int currentRow = 6;
+        int currentRow = 7;
 
         UserService.Iface userClient = new ThriftClients().makeUserClient();
 
