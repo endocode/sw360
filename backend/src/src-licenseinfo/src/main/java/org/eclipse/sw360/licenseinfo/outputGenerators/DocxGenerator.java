@@ -15,6 +15,7 @@ package org.eclipse.sw360.licenseinfo.outputGenerators;
 import org.apache.log4j.Logger;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.thrift.TException;
+import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.eclipse.sw360.datahandler.common.CommonUtils;
 import org.eclipse.sw360.datahandler.thrift.SW360Exception;
@@ -188,8 +189,6 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             replaceText(document, "$list_comma_sep_licenses_above_threshold", String.join(", ", mostLicenses));
             fillAdditionalRequirementsTable(document, obligationResults, mostLicenses);
 
-            // because of the impossible API component subsections must be the last thing in the docx file
-            // the rest of the sections must be generated after this
             writeComponentSubsections(document, projectLicenseInfoResults, obligationResults);
     }
 
@@ -300,17 +299,29 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
         return obligationResults.stream().filter(opr -> opr.getRelease() == release).findFirst();
     }
 
-    private void writeComponentSubsections(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults, Collection<ObligationParsingResult> obligationResults) throws XmlException {
+    private void writeComponentSubsections(XWPFDocument document, Collection<LicenseInfoParsingResult> projectLicenseInfoResults, Collection<ObligationParsingResult> obligationResults) throws SW360Exception, XmlException {
+
+        XmlCursor cursor =
+                document.getParagraphs().stream()
+                .filter(p -> p.getText().equals("Readme_OSS"))
+                .map(p -> p.getCTP().newCursor())
+                .findFirst()
+                .orElseThrow(() -> new SW360Exception("Corrupt template; unable to set cursor"));
 
         for (LicenseInfoParsingResult result : projectLicenseInfoResults) {
 
-            XWPFParagraph title = document.createParagraph();
+            XWPFParagraph title = document.insertNewParagraph(cursor);
             title.setStyle(STYLE_HEADING_3);
             title.setNumID(new BigInteger("2"));
             XWPFRun titleRun = title.createRun();
             titleRun.setText(result.getVendor() + " " + result.getName());
 
-            XWPFParagraph description = document.createParagraph();
+            if (cursor.hasNextToken()) {
+                cursor.toNextToken();
+            } else {
+                throw new SW360Exception("Corrupt template; unable to proceed to next token");
+            }
+            XWPFParagraph description = document.insertNewParagraph(cursor);
             XWPFRun descriptionRun = description.createRun();
 
             LicenseInfo licenseInfo = result.getLicenseInfo();
@@ -339,7 +350,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
 
                 int currentRow = 0;
                 Collection<Obligation> obligations = obligationsResult.getObligations();
-                XWPFTable table = document.createTable();
+                XWPFTable table = document.insertNewTbl(cursor);
                 for (Obligation o : obligations) {
                     XWPFTableRow row = table.insertNewTableRow(currentRow++);
                     String licensesString = String.join(" ", o.getLicenseIDs());
