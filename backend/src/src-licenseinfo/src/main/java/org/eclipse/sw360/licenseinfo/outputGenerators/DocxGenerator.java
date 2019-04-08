@@ -145,6 +145,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
         Collection<ObligationParsingResult> obligationResults,
         User user) throws XmlException, TException {
 
+            String businessUnit = project.getBusinessUnit();
             String projectName = project.getName();
             String projectVersion = project.getVersion();
             String obligationsText = project.getObligationsText();
@@ -160,6 +161,7 @@ public class DocxGenerator extends OutputGenerator<byte[]> {
             fillOwnerGroup(document, project);
             fillAttendeesTable(document, project);
 
+            replaceText(document, "$bunit", businessUnit);
             replaceText(document, "$license-info-header", licenseInfoHeaderText);
             replaceText(document, "$project-name", projectName);
             replaceText(document, "$project-version", projectVersion);
